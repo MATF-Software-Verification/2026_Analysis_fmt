@@ -39,9 +39,63 @@ Za svaki korišćeni alat ili tehniku biće dokumentovani:
 * interpretacija rezultata,
 * zaključak.
 
-### 4.1. Analiza 1
+### 4.1. Unit testovi i pokrivenost koda
 
-Biće dopunjeno.
+Za proveru funkcionalnog ponašanja biblioteke napisani su dodatni unit testovi korišćenjem **Google Test** framework-a. Pokrivenost izvornog koda testovima praćena je alatom **LCOV**.
+
+Testovi su fokusirani na javni `fmt::format` API i nekoliko reprezentativnih graničnih slučajeva numeričkog formatiranja i obrade format stringova.
+
+Napisano je ukupno pet testova:
+
+1. **IntegerLimits** - proverava formatiranje vrednosti `INT_MIN` i `INT_MAX`.
+2. **HexPadding** -  proverava heksadecimalno formatiranje sa zadatom širinom i vodećim nulama.
+3. **FloatingPointSpecialValues** - proverava formatiranje vrednosti `inf`, `-inf` i `NaN`.
+4. **PrecisionAndRounding** - proverava preciznost i zaokruživanje floating-point vrednosti.
+5. **InvalidRuntimeFormatThrows** - proverava da neispravan runtime format string dovodi do kontrolisanog `fmt::format_error` izuzetka.
+
+Svi napisani testovi uspešno su prošli nad analiziranim commitom projekta.
+
+#### Pokrivenost koda
+
+Testovi su kompajlirani sa GCC coverage instrumentacijom, nakon čega su podaci prikupljeni pomoću LCOV-a.
+
+Iz coverage izveštaja uklonjeni su:
+
+* sistemski C++ headeri,
+* Google Test kod,
+* sam kod napisanih testova.
+
+Na taj način rezultat predstavlja pokrivenost analiziranog `fmt` koda testovima napisanim u okviru seminarskog rada.
+
+Dobijeni rezultati su:
+
+* **Line coverage:** 26.0% - 636 od 2448 linija
+* **Function coverage:** 20.9% - 166 od 793 funkcije
+
+Pokrivenost po glavnim fajlovima koji su izvršeni tokom testova:
+
+| Fajl           | Line coverage | Function coverage |
+| -------------- | ------------: | ----------------: |
+| `base.h`       |         42.9% |             38.9% |
+| `format.h`     |         25.0% |             16.0% |
+| `format-inl.h` |          4.7% |              6.4% |
+
+Najveća pokrivenost ostvarena je u `base.h`, dok je `format-inl.h` znatno manje pokriven. Ovo je očekivano jer napisani testovi koriste osnovni formatting API i ne aktiviraju veliki deo interne implementacije biblioteke.
+
+Dobijeni procenat ne predstavlja pokrivenost kompletnog projekta njegovim postojećim test suite-om, već samo pokrivenost ostvarenu pomoću dodatnih testova napisanih za ovu analizu.
+
+Visoka pokrivenost sama po sebi ne garantuje ispravnost programa, već pokazuje koji deo koda je izvršen tokom testiranja.
+
+#### Zaključak
+
+U testiranim slučajevima nisu pronađena odstupanja od očekivanog ponašanja.
+
+Test suite može biti proširen tokom kasnijih analiza ukoliko fuzz testiranje, sanitizatori ili statička analiza otkriju dodatne slučajeve koje bi bilo korisno sačuvati kao regresione testove.
+
+Analiza se reprodukuje pokretanjem:
+
+`./unit_tests/run_tests.sh`
+
 
 ### 4.2. Analiza 2
 
