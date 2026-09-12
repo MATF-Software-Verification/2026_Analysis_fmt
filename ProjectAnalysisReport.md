@@ -154,9 +154,31 @@ Na trenutnom uzorku izvršavanja nisu pronađeni padovi, memory safety problemi 
 
 Fuzz target ostaje koristan za duža izvršavanja i može se naknadno proširiti novim tipovima argumenata ili specijalizovanim dictionary fajlom ukoliko dalja analiza pokaže da je to potrebno.
 
-### 4.3. Analiza 3
+### 4.3. Valgrind Memcheck
 
-Biće dopunjeno.
+Za runtime analizu rada sa memorijom korišćen je **Valgrind Memcheck**.
+
+Cilj analize bio je da se prilikom izvršavanja dodatnih unit testova pronađu eventualne greške u radu sa memorijom, kao što su:
+
+* nevalidna čitanja ili upisi u memoriju;
+* upotreba neinicijalizovanih vrednosti;
+* nepravilno oslobađanje memorije;
+* curenje memorije.
+
+#### Obuhvat analize
+
+Kroz Memcheck je pokrenut izvršni program:
+
+`unit_tests/build/format_edge_tests`
+
+Program sadrži pet dodatnih unit testova nad javnim `fmt::format` API-jem. Testovi obuhvataju granične vrednosti celih brojeva, heksadecimalno formatiranje, specijalne floating-point vrednosti, zaokruživanje i obradu neispravnog runtime format stringa.
+
+#### Pokretanje
+
+Analiza se iz korena repozitorijuma reprodukuje komandom:
+
+```bash
+./valgrind/run_memcheck.sh
 
 ### 4.4. Analiza 4
 

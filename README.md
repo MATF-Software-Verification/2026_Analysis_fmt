@@ -24,31 +24,58 @@ U okviru rada biće korišćeno najmanje šest alata ili tehnika za analizu soft
 
 ## Korišćeni alati i tehnike
 
-Ova sekcija će biti dopunjavana tokom izrade seminarskog rada.
+Trenutno su završene sledeće analize:
+
+### Unit testovi i LCOV
+
+Napisano je pet dodatnih Google Test testova nad javnim `fmt::format` API-jem. Pokrivenost koda prati se alatom LCOV.
+
+Dobijena pokrivenost `fmt` koda dodatnim testovima iznosi:
+
+- line coverage: 26.0%;
+- function coverage: 20.9%.
+
+Detaljno uputstvo nalazi se u `unit_tests/RunningTests.md`.
 
 ### LLVM libFuzzer uz ASan i UBSan
 
-Za coverage-guided fuzz testiranje javnog `fmt::format` API-ja koristi se
-LLVM libFuzzer uz AddressSanitizer i UndefinedBehaviorSanitizer. Fuzz target
-obrađuje runtime format stringove za tipove `int`, `unsigned int`, `double` i
-`std::string`.
+Za coverage-guided fuzz testiranje javnog `fmt::format` API-ja koristi se LLVM libFuzzer uz AddressSanitizer i UndefinedBehaviorSanitizer.
 
-Početni, ručno pripremljeni corpus nalazi se u `fuzzing/corpus/`, a kompletna
-uputstva i objašnjenje rezultata u `fuzzing/RunningFuzzing.md`.
+Fuzz target obrađuje runtime format stringove za tipove `int`, `unsigned int`, `double` i `std::string`. Početni, ručno pripremljeni corpus nalazi se u `fuzzing/corpus/`.
+
+Detaljno uputstvo i tumačenje rezultata nalaze se u `fuzzing/RunningFuzzing.md`.
+
+### Valgrind Memcheck
+
+Za runtime analizu memorije koristi se Valgrind Memcheck nad izvršnim programom dodatnih unit testova.
+
+Memcheck proverava nevalidne pristupe memoriji, upotrebu neinicijalizovanih vrednosti i curenje memorije. U izvršenoj analizi nad pet testova nije prijavljena nijedna memorijska greška niti curenje memorije.
+
+Detaljno uputstvo i tumačenje rezultata nalaze se u `valgrind/RunningValgrind.md`.
 
 ## Reprodukcija rezultata
 
-Fuzzing analiza se iz korena repozitorijuma reprodukuje komandom:
+Unit testovi i coverage analiza pokreću se iz korena repozitorijuma komandom:
+
+```bash
+./unit_tests/run_tests.sh
+```
+
+Fuzzing analiza se reprodukuje komandom:
 
 ```bash
 ./fuzzing/run_fuzzing.sh 500
 ```
 
-Skripta kompajlira target sa libFuzzer, ASan i UBSan instrumentacijom, a zatim
-ga pokreće nad seed corpusom. Eventualni reprodukcioni artefakti smeštaju se u
-`fuzzing/artifacts/`.
+Valgrind Memcheck analiza se reprodukuje komandom:
 
-Detaljna uputstva za ostale analize biće navedena u odgovarajućim direktorijumima i u ovom README fajlu nakon njihovog završetka.
+```bash
+./valgrind/run_memcheck.sh
+```
+
+Memcheck rezultat se nakon pokretanja čuva u:
+
+`valgrind/results/memcheck.log`
 
 ## Izveštaj
 

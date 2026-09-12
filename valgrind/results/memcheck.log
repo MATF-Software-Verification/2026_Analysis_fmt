@@ -1,0 +1,15 @@
+==10763== Memcheck, a memory error detector
+==10763== Copyright (C) 2002-2022, and GNU GPL'd, by Julian Seward et al.
+==10763== Using Valgrind-3.22.0 and LibVEX; rerun with -h for copyright info
+==10763== Command: /home/dunja/projekatVS/2026_Analysis_fmt/unit_tests/build/format_edge_tests
+==10763== Parent PID: 10731
+==10763== 
+==10763== 
+==10763== HEAP SUMMARY:
+==10763==     in use at exit: 0 bytes in 0 blocks
+==10763==   total heap usage: 233 allocs, 233 frees, 118,235 bytes allocated
+==10763== 
+==10763== All heap blocks were freed -- no leaks are possible
+==10763== 
+==10763== For lists of detected and suppressed errors, rerun with: -s
+==10763== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
