@@ -26,9 +26,29 @@ U okviru rada biće korišćeno najmanje šest alata ili tehnika za analizu soft
 
 Ova sekcija će biti dopunjavana tokom izrade seminarskog rada.
 
+### LLVM libFuzzer uz ASan i UBSan
+
+Za coverage-guided fuzz testiranje javnog `fmt::format` API-ja koristi se
+LLVM libFuzzer uz AddressSanitizer i UndefinedBehaviorSanitizer. Fuzz target
+obrađuje runtime format stringove za tipove `int`, `unsigned int`, `double` i
+`std::string`.
+
+Početni, ručno pripremljeni corpus nalazi se u `fuzzing/corpus/`, a kompletna
+uputstva i objašnjenje rezultata u `fuzzing/RunningFuzzing.md`.
+
 ## Reprodukcija rezultata
 
-Detaljna uputstva za pokretanje svakog alata biće navedena u odgovarajućem direktorijumu i u ovom README fajlu nakon završetka pojedinačnih analiza.
+Fuzzing analiza se iz korena repozitorijuma reprodukuje komandom:
+
+```bash
+./fuzzing/run_fuzzing.sh 500
+```
+
+Skripta kompajlira target sa libFuzzer, ASan i UBSan instrumentacijom, a zatim
+ga pokreće nad seed corpusom. Eventualni reprodukcioni artefakti smeštaju se u
+`fuzzing/artifacts/`.
+
+Detaljna uputstva za ostale analize biće navedena u odgovarajućim direktorijumima i u ovom README fajlu nakon njihovog završetka.
 
 ## Izveštaj
 

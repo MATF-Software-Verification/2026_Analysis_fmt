@@ -97,9 +97,62 @@ Analiza se reprodukuje pokretanjem:
 `./unit_tests/run_tests.sh`
 
 
-### 4.2. Analiza 2
+### 4.2. Fuzz testiranje
 
-Biće dopunjeno.
+Za dodatno ispitivanje robusnosti biblioteke primenjeno je **coverage-guided fuzz testiranje** korišćenjem **libFuzzer** alata uz **AddressSanitizer** i **UndefinedBehaviorSanitizer**.
+
+Cilj fuzz testa bio je da nasumično generisanim ulazima proveri ponašanje `fmt::format` funkcije pri obradi različitih runtime format stringova i tipova argumenata.
+
+Napisan je poseban fuzz target:
+
+`fuzzing/format_fuzzer.cpp`
+
+Fuzzer iz jednog ulaznog bafera bira jedan od četiri podržana tipa i zatim formira poziv ka:
+
+`fmt::format(fmt::runtime(format_str), value)`
+
+Obuhvaćeni su sledeći tipovi:
+
+* `int`
+* `unsigned int`
+* `double`
+* `std::string`
+
+Neispravni format stringovi su očekivani tokom fuzzinga, pa se `fmt::format_error` izuzeci hvataju i ignorišu kako bi se fokus zadržao na neočekivanim padovima, problemima sa memorijom i nedefinisanim ponašanjem.
+
+#### Pokretanje
+
+Analiza se reprodukuje pokretanjem:
+
+`./fuzzing/run_fuzzing.sh`
+
+Fuzzer se kompajlira pomoću Clang-a 18.1.3 sa opcijama:
+
+* `-fsanitize=fuzzer,address,undefined`
+* `-O1`
+* `-g`
+
+Kao početni corpus korišćen je mali skup ručno pripremljenih seed-ova za sva četiri tipa podataka.
+
+#### Rezultat
+
+Fuzz target je uspešno kompajliran i pokrenut nad seed corpusom. Tokom probnog izvršavanja nije došlo do prijavljenih `AddressSanitizer` niti `UndefinedBehaviorSanitizer` grešaka.
+
+LibFuzzer je tokom izvršavanja automatski proširio corpus dodatnim interesantnim ulazima, što pokazuje da target uspešno dolazi do većeg broja putanja kroz kod od početnog ručno pripremljenog skupa ulaza.
+
+#### Ograničenje okruženja
+
+U korišćenom okruženju `LeakSanitizer` prijavljuje lažan problem pri završetku fuzzera zbog ograničenja rada pod `ptrace`. Zbog toga je u skripti za pokretanje postavljeno:
+
+`ASAN_OPTIONS=detect_leaks=0`
+
+Ova izmena ne isključuje `AddressSanitizer` ni `UndefinedBehaviorSanitizer`, već samo sprečava lažni neuspeh završetka procesa.
+
+#### Zaključak
+
+Na trenutnom uzorku izvršavanja nisu pronađeni padovi, memory safety problemi ni prijavljeno nedefinisano ponašanje u obuhvaćenim scenarijima.
+
+Fuzz target ostaje koristan za duža izvršavanja i može se naknadno proširiti novim tipovima argumenata ili specijalizovanim dictionary fajlom ukoliko dalja analiza pokaže da je to potrebno.
 
 ### 4.3. Analiza 3
 
