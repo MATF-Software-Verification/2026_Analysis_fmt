@@ -53,6 +53,16 @@ Memcheck proverava nevalidne pristupe memoriji, upotrebu neinicijalizovanih vred
 
 Detaljno uputstvo i tumačenje rezultata nalaze se u `valgrind/RunningValgrind.md`.
 
+### perf
+
+Za analizu performansi koristi se Linux alat perf.
+
+Napravljen je kontrolisani workload koji više puta poziva `fmt::format` nad celobrojnim, floating-point i string vrednostima. Korišćeni su `perf stat` za zbirne metrike i `perf record`/`perf report` za pronalaženje hot spotova.
+
+Detaljno uputstvo i tumačenje rezultata nalaze se u:
+
+`perf/RunningPerf.md`
+
 ## Reprodukcija rezultata
 
 Unit testovi i coverage analiza pokreću se iz korena repozitorijuma komandom:
@@ -76,6 +86,20 @@ Valgrind Memcheck analiza se reprodukuje komandom:
 Memcheck rezultat se nakon pokretanja čuva u:
 
 `valgrind/results/memcheck.log`
+
+Zbirne performance metrike dobijaju se komandom:
+
+```bash
+./perf/run_perf_stat.sh
+```
+
+Hot spot analiza se pokreće komandom:
+
+```bash
+./perf/run_perf_hotspots.sh
+```
+
+Tekstualni rezultati čuvaju se u `perf/results/`.
 
 ## Izveštaj
 

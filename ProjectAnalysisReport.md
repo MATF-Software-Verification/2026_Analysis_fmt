@@ -180,9 +180,123 @@ Analiza se iz korena repozitorijuma reprodukuje komandom:
 ```bash
 ./valgrind/run_memcheck.sh
 
-### 4.4. Analiza 4
+Skripta prvo konfiguriše i kompajlira Debug build testova, a zatim pokreće Memcheck nad izvršnim programom.
 
-Biće dopunjeno.
+Korišćene su sledeće opcije:
+
+- `--tool=memcheck` — bira alat za proveru memorijskih grešaka;
+- `--leak-check=full` — uključuje detaljnu proveru curenja memorije;
+- `--show-leak-kinds=all` — prikazuje sve vrste eventualnih curenja;
+- `--track-origins=yes` — omogućava pronalaženje porekla neinicijalizovanih vrednosti;
+- `--error-exitcode=1` — skripta završava neuspešno ako Memcheck pronađe grešku.
+
+Rezultat se čuva u:
+```bash
+`valgrind/results/memcheck.log`
+```
+Analiza je izvršena alatom Valgrind 3.22.0.
+
+#### Rezultat
+
+Memcheck je prijavio sledeći sažetak:
+
+```text
+in use at exit: 0 bytes in 0 blocks
+total heap usage: 233 allocs, 233 frees
+All heap blocks were freed -- no leaks are possible
+ERROR SUMMARY: 0 errors from 0 contexts
+```
+
+To znači da je tokom analiziranog izvršavanja svaka zabeležena alokacija memorije odgovarajuće oslobođena i da Memcheck nije pronašao memorijske greške.
+
+#### Zaključak
+
+Na putanjama izvršenim kroz pet dodatnih unit testova nisu pronađeni problemi sa memorijom niti curenje memorije.
+
+Ovaj rezultat ne dokazuje odsustvo memorijskih grešaka u celom projektu `fmt`, već potvrđuje da ih Memcheck nije pronašao u konkretnom obuhvatu testiranih scenarija i ulaza.
+
+### 4.4. Analiza performansi pomoću perf
+
+Za analizu performansi korišćen je Linux alat **perf**.
+
+Cilj analize bio je da se za kontrolisani workload identifikuju zbirne performance metrike i funkcije u kojima se provodi najveći deo CPU vremena.
+
+#### Workload
+
+Napravljen je poseban workload:
+
+`perf/format_workload.cpp`
+
+Program izvršava 10 miliona iteracija. U svakoj iteraciji koristi `fmt::format` za:
+
+* celobrojnu vrednost sa širinom i vodećim nulama;
+* `double` vrednost sa zadatom preciznošću;
+* string vrednost sa poravnanjem.
+
+Rezultati formatiranja učestvuju u izračunavanju i ispisu kontrolne vrednosti `checksum`. Time se sprečava da optimizujući kompajler ukloni pozive formatiranja kao nepotreban kod.
+
+Workload se kompajlira sa opcijama `-O2`, `-g` i `-DNDEBUG`.
+
+#### Zbirne metrike
+
+Zbirne performance metrike reprodukuju se komandom:
+
+```bash
+./perf/run_perf_stat.sh
+```
+
+Skripta pokreće `perf stat` i rezultat čuva u:
+
+`perf/results/perf_stat.txt`
+
+Dobijeni rezultat bio je:
+
+```text
+task-clock:         1692.42 msec
+time elapsed:       1.623658679 seconds
+cycles:             7789029895
+instructions:       38889633886
+instructions/cycle: 4.99
+branches:           6726364122
+branch-misses:      203770
+context-switches:   0
+cpu-migrations:     0
+```
+
+Odnos promašaja grananja je približno 0.003%. Tokom analiziranog pokretanja nije bilo context switch-eva ni migracija procesa između CPU jezgara.
+
+#### Hot spot analiza
+
+Za profil hot spotova korišćeni su `perf record` i `perf report`. Analiza se reprodukuje komandom:
+
+```bash
+./perf/run_perf_hotspots.sh
+```
+
+Skripta koristi `perf record --call-graph dwarf` za statističko uzorkovanje i beleženje pozivnih lanaca. Čitljiv izveštaj se čuva u:
+
+`perf/results/perf_report.txt`
+
+U profilu su najzastupljenije putanje povezane sa funkcijama:
+
+* `fmt::vformat`;
+* `fmt::detail::vformat_to`;
+* `fmt::detail::parse_format_string`;
+* obradom format specifikacija;
+* upisom formatiranog stringa;
+* Unicode obradom i poravnavanjem stringa.
+
+Ovaj rezultat je očekivan za izabrani workload, jer se format stringovi sa specifikacijama `{:08d}`, `{:.6f}` i `"{:<16}"` obrađuju u svakoj iteraciji.
+
+#### Okruženje i ograničenja
+
+Analiza je izvršena u Ubuntu 24.04.3 WSL2 okruženju, sa kernelom `6.18.33.2-microsoft-standard-WSL2` i alatom perf 6.8.12.
+
+Zbog razlike između WSL kernela i dostupne Ubuntu verzije alata, skripte direktno koriste instalirani perf binarni fajl. Rezultati zato važe za konkretan workload i korišćeno okruženje; nisu opšti benchmark cele biblioteke niti se mogu direktno porediti sa rezultatima na drugom računaru ili operativnom sistemu.
+
+#### Zaključak
+
+U analiziranom workload-u nisu pronađeni neočekivani hot spotovi niti potvrđeno usko grlo projekta. Najveći deo rada očekivano je vezan za parsiranje format stringa, obradu format specifikacija i generisanje formatiranog izlaza.
 
 ### 4.5. Analiza 5
 
