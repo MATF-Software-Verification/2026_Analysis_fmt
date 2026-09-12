@@ -1,0 +1,22 @@
+# started on Sat Sep 12 18:14:19 2026
+
+
+ Performance counter stats for '/home/dunja/projekatVS/2026_Analysis_fmt/perf/build/format_workload':
+
+           1692.42 msec task-clock:u                     #    1.042 CPUs utilized             
+                 0      context-switches:u               #    0.000 /sec                      
+                 0      cpu-migrations:u                 #    0.000 /sec                      
+               127      page-faults:u                    #   75.041 /sec                      
+        7789029895      cycles:u                         #    4.602 GHz                       
+          82318519      stalled-cycles-frontend:u        #    1.06% frontend cycles idle      
+       38889633886      instructions:u                   #    4.99  insn per cycle            
+                                                  #    0.00  stalled cycles per insn   
+        6726364122      branches:u                       #    3.974 G/sec                     
+            203770      branch-misses:u                  #    0.00% of all branches           
+
+       1.623658679 seconds time elapsed
+
+       1.692836000 seconds user
+       0.000000000 seconds sys
+
+
