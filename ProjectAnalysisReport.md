@@ -372,10 +372,78 @@ U obuhvaćenim testnim putanjama ASan i UBSan nisu prijavili memory-safety probl
 
 Rezultat ne dokazuje odsustvo svih mogućih problema u celoj biblioteci, već pokazuje da ih sanitizeri nisu pronašli pri izvršavanju širokog originalnog test suite-a i dodatnih testova.
 
-### 4.6. Analiza 6
+### 4.6. Statička analiza pomoću Cppcheck-a
 
-Biće dopunjeno.
+Za statičku analizu produkcionog koda biblioteke korišćen je **Cppcheck 2.13.0**.
+
+Cppcheck analizira izvorni kod bez njegovog izvršavanja i prijavljuje potencijalne greške, sumnjive obrasce, portability probleme i preporuke za stil ili performanse.
+
+#### Obuhvat analize
+
+Analizirani su direktorijumi:
+
+* `fmt/include/`;
+* `fmt/src/`.
+
+Testni kod nije analiziran, jer je cilj bio ispitivanje implementacije biblioteke `fmt`.
+
+#### Pokretanje
+
+Analiza se iz korena repozitorijuma reprodukuje komandom:
+
+```bash
+./cppcheck/run_cppcheck.sh
+```
+
+Rezultat se čuva u:
+
+`cppcheck/results/cppcheck_report.txt`
+
+Korišćene su kategorije `warning`, `style`, `performance` i `portability`, uz opcije `--inconclusive`, `--force` i `--std=c++20`.
+
+#### Rezultat
+
+Cppcheck je prijavio:
+
+* 4 `syntaxError` poruke;
+* 20 warnings;
+* 131 style preporuku;
+* 34 performance preporuke;
+* 2 portability upozorenja.
+
+Četiri `syntaxError` poruke javljaju se u makro/template deklaracijama koje Cppcheck 2.13 ne parsira potpuno u ovoj konfiguraciji. One nisu potvrđene greške, jer je isti kod uspešno kompajliran Clang-om i izvršen kroz testove.
+
+Najveći deo ostalih nalaza pripada kategorijama kao što su `noExplicitConstructor`, `functionConst`, `functionStatic`, `shadowFunction` i `passedByValue`. To su preporuke za stil, čitljivost ili potencijalni refaktoring.
+
+Ručno su provereni i ozbiljniji kandidati, kao što su `bitwiseOnBoolean`, `shiftNegativeLHS`, `accessMoved` i `AssignmentAddressToInteger`. Oni odgovaraju namernim bitovskim proverama, `static_assert` proveri, dozvoljenom radu sa moved-from objektom ili makro-ekspanziji oko `fopen`; nijedan nije potvrđen kao bag u `fmt` implementaciji.
+
+#### Zaključak
+
+Cppcheck nije pronašao potvrđen problem u analiziranom produkcionom kodu biblioteke `fmt`.
+
+Rezultat pokazuje ograničenje statičke analize nad template-heavy C++ kodom: deo prijava zahteva ručnu proveru, a pojedine sintaksne poruke nastaju zbog ograničenja parsera alata, a ne zbog neispravnog C++ koda.
 
 ## 5. Zaključak
 
-Završni zaključci biće dodati nakon sprovođenja svih analiza.
+U seminarskom radu analizirana je verzija projekta `fmt` na commit-u `7bce22571a49ba7921174effefbfbf24300667a6`.
+
+Korišćeno je šest različitih tehnika i alata:
+
+1. dodatni unit testovi uz LCOV pokrivenost;
+2. LLVM libFuzzer;
+3. Valgrind Memcheck;
+4. perf;
+5. AddressSanitizer i UndefinedBehaviorSanitizer;
+6. Cppcheck.
+
+Dodatni unit testovi su uspešno prošli i ostvarili 26.0% line coverage i 20.9% function coverage nad izvršenim `fmt` kodom. Fuzzing nije prijavio padove niti ASan/UBSan greške u obuhvaćenim slučajevima. Valgrind Memcheck nije pronašao memorijske greške ni curenje memorije pri pokretanju dodatnih testova.
+
+Perf analiza je pokazala da se u izabranom workload-u najveći deo rada očekivano odnosi na parsiranje format stringova, obradu format specifikacija i generisanje formatiranog izlaza. Nisu pronađeni neočekivani hot spotovi.
+
+Posebna ASan i UBSan analiza nad širokim originalnim `fmt` test suite-om i dodatnim unit testovima nije prijavila memory-safety probleme niti nedefinisano ponašanje u analiziranom obuhvatu. Cppcheck je prijavio više style i performance preporuka, ali ručnom proverom nijedan prijavljeni kandidat nije potvrđen kao bag u implementaciji.
+
+Analiza nije pronašla potvrđen bag u verziji projekta koja je obuhvaćena radom. To ipak ne dokazuje da u celoj biblioteci ne postoje problemi: svaki rezultat važi samo za konkretne testne putanje, ulaze, konfiguraciju alata i WSL okruženje.
+
+Rad je pokazao da kombinovanje testiranja, fuzzinga, runtime memorijske analize, sanitizera, performance profilisanja i statičke analize daje širu i pouzdaniju sliku kvaliteta softvera nego korišćenje samo jednog alata.
+
+ASan + UBSan i Cppcheck predstavljaju dve korišćene tehnike koje nisu obrađene na vežbama, čime je ispunjen i taj uslov seminarskog rada.

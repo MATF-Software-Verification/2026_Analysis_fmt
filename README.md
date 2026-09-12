@@ -73,6 +73,16 @@ Detaljno uputstvo i tumačenje rezultata nalaze se u:
 
 `sanitizers/RunningSanitizers.md`
 
+### Cppcheck
+
+Za statičku analizu produkcionog C++ koda koristi se Cppcheck.
+
+Analizirani su direktorijumi `fmt/include/` i `fmt/src/`. Nalazi su ručno pregledani; Cppcheck nije pronašao potvrđen problem u implementaciji biblioteke.
+
+Detaljno uputstvo i tumačenje rezultata nalaze se u:
+
+`cppcheck/RunningCppcheck.md`
+
 ## Reprodukcija rezultata
 
 Unit testovi i coverage analiza pokreću se iz korena repozitorijuma komandom:
@@ -119,6 +129,14 @@ Sanitizer analiza se reprodukuje komandom:
 
 Rezultati se čuvaju u `sanitizers/results/`.
 
+Cppcheck analiza se reprodukuje komandom:
+
+```bash
+./cppcheck/run_cppcheck.sh
+```
+
+Rezultat se čuva u `cppcheck/results/cppcheck_report.txt`.
+
 ## Izveštaj
 
 Detaljan opis postupka analize i dobijenih rezultata nalaziće se u fajlu:
@@ -126,3 +144,9 @@ Detaljan opis postupka analize i dobijenih rezultata nalaziće se u fajlu:
 ProjectAnalysisReport.md
 
 ## Zaključci
+
+Analizom nije pronađen potvrđen bag u obuhvaćenoj verziji projekta `fmt`.
+
+Testovi, fuzzing, Valgrind Memcheck i sanitizeri nisu prijavili runtime probleme u analiziranim scenarijima. Perf analiza je pokazala očekivane hot spotove vezane za parsiranje i formatiranje, dok Cppcheck nije prijavio nalaz koji je ručnom proverom potvrđen kao greška.
+
+Rezultati važe za korišćene ulaze, testove i WSL okruženje; ne predstavljaju dokaz odsustva svih mogućih problema u biblioteci.
