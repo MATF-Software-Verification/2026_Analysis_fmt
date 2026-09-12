@@ -298,9 +298,79 @@ Zbog razlike između WSL kernela i dostupne Ubuntu verzije alata, skripte direkt
 
 U analiziranom workload-u nisu pronađeni neočekivani hot spotovi niti potvrđeno usko grlo projekta. Najveći deo rada očekivano je vezan za parsiranje format stringa, obradu format specifikacija i generisanje formatiranog izlaza.
 
-### 4.5. Analiza 5
+### 4.5. ASan i UBSan analiza
 
-Biće dopunjeno.
+Za dodatnu runtime proveru korišćeni su **AddressSanitizer (ASan)** i **UndefinedBehaviorSanitizer (UBSan)**.
+
+Cilj analize bio je da se pri izvršavanju testova otkriju memory-safety problemi i određeni oblici nedefinisanog ponašanja.
+
+#### Obuhvat analize
+
+Sanitizeri su pokrenuti nad:
+
+* originalnim `fmt` test suite-om;
+* pet dodatnih unit testova iz `unit_tests/tests/format_edge_tests.cpp`.
+
+Originalni test suite obuhvata različite delove biblioteke, uključujući formatiranje, argumente, `chrono`, Unicode, `printf`, ranges i OS-specifičnu funkcionalnost.
+
+#### Pokretanje
+
+Analiza se iz korena repozitorijuma reprodukuje komandom:
+
+```bash
+./sanitizers/run_sanitizers.sh
+```
+
+Skripta pravi dva odvojena Clang build-a: jedan za originalne `fmt` testove, a drugi za dodatne unit testove.
+
+Korišćene su opcije:
+
+```text
+-fsanitize=address,undefined
+-fno-omit-frame-pointer
+-O1
+-g
+```
+
+`-fsanitize=address,undefined` uključuje ASan i UBSan, dok `-fno-omit-frame-pointer` i `-g` omogućavaju čitljivije stack trace-ove pri eventualnoj prijavi problema.
+
+#### Ograničenje okruženja
+
+Zbog poznatog LeakSanitizer/`ptrace` ograničenja u WSL okruženju, skripta koristi:
+
+```text
+ASAN_OPTIONS=detect_leaks=0
+```
+
+Time se isključuje samo LeakSanitizer. ASan i UBSan ostaju aktivni.
+
+#### Posebno obrađeni test-only slučajevi
+
+Dva originalna test slučaja su izuzeta samo iz sanitizer izvršavanja:
+
+* `memory_buffer_test.move_ctor_dynamic_buffer_non_propagating`;
+* `ostream_test.write_to_ostream_max_size`.
+
+Ti testovi namerno koriste testne scenarije koje UBSan prijavljuje pre provere očekivanog ponašanja: prvi koristi mock allocator sa praznim pokazivačem, a drugi izvodi aritmetiku nad `nullptr` pri simulaciji maksimalne veličine stream izlaza.
+
+Ostatak originalnog test suite-a je pokrenut, uključujući 18 CTest test programa, 137 testova u `format-test` i 18 testova u `ostream-test`.
+
+#### Rezultat
+
+Svi pokrenuti originalni i dodatni testovi su uspešno prošli.
+
+U sačuvanim logovima:
+
+* `sanitizers/results/fmt_tests.log`;
+* `sanitizers/results/custom_tests.log`;
+
+nije pronađena `AddressSanitizer`, `UndefinedBehaviorSanitizer`, `runtime error` niti `ERROR:` prijava.
+
+#### Zaključak
+
+U obuhvaćenim testnim putanjama ASan i UBSan nisu prijavili memory-safety problem niti nedefinisano ponašanje u analiziranoj implementaciji `fmt`.
+
+Rezultat ne dokazuje odsustvo svih mogućih problema u celoj biblioteci, već pokazuje da ih sanitizeri nisu pronašli pri izvršavanju širokog originalnog test suite-a i dodatnih testova.
 
 ### 4.6. Analiza 6
 

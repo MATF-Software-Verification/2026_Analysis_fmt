@@ -63,6 +63,16 @@ Detaljno uputstvo i tumačenje rezultata nalaze se u:
 
 `perf/RunningPerf.md`
 
+### AddressSanitizer i UndefinedBehaviorSanitizer
+
+Za dodatnu runtime analizu koriste se ASan i UBSan nad originalnim `fmt` test suite-om i pet dodatnih unit testova.
+
+Sanitizeri proveravaju memory-safety probleme i određene oblike nedefinisanog ponašanja. U pokrenutom obuhvatu nisu prijavljene ASan ni UBSan greške.
+
+Detaljno uputstvo i tumačenje rezultata nalaze se u:
+
+`sanitizers/RunningSanitizers.md`
+
 ## Reprodukcija rezultata
 
 Unit testovi i coverage analiza pokreću se iz korena repozitorijuma komandom:
@@ -100,6 +110,14 @@ Hot spot analiza se pokreće komandom:
 ```
 
 Tekstualni rezultati čuvaju se u `perf/results/`.
+
+Sanitizer analiza se reprodukuje komandom:
+
+```bash
+./sanitizers/run_sanitizers.sh
+```
+
+Rezultati se čuvaju u `sanitizers/results/`.
 
 ## Izveštaj
 

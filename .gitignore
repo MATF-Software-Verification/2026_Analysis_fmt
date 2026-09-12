@@ -5,3 +5,4 @@ fuzzing/build/
 fuzzing/artifacts/
 perf/build/
 perf/results/perf.data*
+sanitizers/build/
