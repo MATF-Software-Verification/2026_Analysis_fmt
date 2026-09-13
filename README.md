@@ -20,11 +20,11 @@ Originalni projekat je dodat u ovaj repozitorijum kao Git submodule u direktorij
 
 Cilj seminarskog rada je analiza projekta korišćenjem različitih tehnika i alata za verifikaciju softvera, sa fokusom na pronalaženje potencijalnih grešaka, problema sa memorijom, neispravnog ponašanja.
 
-U okviru rada biće korišćeno najmanje šest alata ili tehnika za analizu softvera.
+U okviru rada korišćeno je šest alata i tehnika za analizu softvera.
 
 ## Korišćeni alati i tehnike
 
-Trenutno su završene sledeće analize:
+U okviru rada sprovedene su sledeće analize:
 
 ### Unit testovi i LCOV
 
@@ -37,13 +37,25 @@ Dobijena pokrivenost `fmt` koda dodatnim testovima iznosi:
 
 Detaljno uputstvo nalazi se u `unit_tests/RunningTests.md`.
 
-### LLVM libFuzzer uz ASan i UBSan
+### Provera stila pomoću clang-format-a
 
-Za coverage-guided fuzz testiranje javnog `fmt::format` API-ja koristi se LLVM libFuzzer uz AddressSanitizer i UndefinedBehaviorSanitizer.
+Za proveru usklađenosti odabranih delova izvornog koda sa pravilima formatiranja koristi se clang-format 18.1.3.
 
-Fuzz target obrađuje runtime format stringove za tipove `int`, `unsigned int`, `double` i `std::string`. Početni, ručno pripremljeni corpus nalazi se u `fuzzing/corpus/`.
+Proveravaju se sledeći reprezentativni fajlovi:
 
-Detaljno uputstvo i tumačenje rezultata nalaze se u `fuzzing/RunningFuzzing.md`.
+- `fmt/include/fmt/base.h`;
+- `fmt/include/fmt/format.h`;
+- `fmt/src/os.cc`.
+
+Provera se izvršava bez izmene izvornog koda:
+
+```bash
+./clang_format/run_clang_format.sh
+```
+
+Skripta koristi konfiguraciju `fmt/.clang-format` i čuva rezultat u `clang_format/results/clang_format_report.txt`.
+
+Detaljno uputstvo nalazi se u `clang_format/RunningClangFormat.md`.
 
 ### Valgrind Memcheck
 
@@ -67,7 +79,7 @@ Detaljno uputstvo i tumačenje rezultata nalaze se u:
 
 Za dodatnu runtime analizu koriste se ASan i UBSan nad originalnim `fmt` test suite-om i pet dodatnih unit testova.
 
-Sanitizeri proveravaju memory-safety probleme i određene oblike nedefinisanog ponašanja. U pokrenutom obuhvatu nisu prijavljene ASan ni UBSan greške.
+Sanitizeri proveravaju memory-safety probleme i određene oblike nedefinisanog ponašanja. Tokom početnog pokretanja UBSan je prijavio dva specifična slučaja u originalnom `fmt` testnom kodu. Oba slučaja su pojedinačno reprodukovana i analizirana, nakon čega su samo ta dva test slučaja izuzeta iz finalnog sanitizer prolaza. U finalnom obuhvatu nisu prijavljeni novi ASan ni UBSan problemi.
 
 Detaljno uputstvo i tumačenje rezultata nalaze se u:
 
@@ -77,7 +89,7 @@ Detaljno uputstvo i tumačenje rezultata nalaze se u:
 
 Za statičku analizu produkcionog C++ koda koristi se Cppcheck.
 
-Analizirani su direktorijumi `fmt/include/` i `fmt/src/`. Nalazi su ručno pregledani; Cppcheck nije pronašao potvrđen problem u implementaciji biblioteke.
+Analizirani su direktorijumi `fmt/include/` i `fmt/src/`. Cppcheck je prijavio više nalaza iz kategorija `warning`, `style`, `performance`, `portability` i `error`. Nekoliko reprezentativnih i potencijalno ozbiljnijih nalaza dodatno je ručno pregledano u izvornom kodu, pri čemu nijedan od njih nije potvrđen kao funkcionalna greška u biblioteci.
 
 Detaljno uputstvo i tumačenje rezultata nalaze se u:
 
@@ -91,11 +103,13 @@ Unit testovi i coverage analiza pokreću se iz korena repozitorijuma komandom:
 ./unit_tests/run_tests.sh
 ```
 
-Fuzzing analiza se reprodukuje komandom:
+Provera stila izvornog koda pokreće se komandom:
 
 ```bash
-./fuzzing/run_fuzzing.sh 500
+./clang_format/run_clang_format.sh
 ```
+
+Rezultat se čuva u `clang_format/results/clang_format_report.txt`.
 
 Valgrind Memcheck analiza se reprodukuje komandom:
 
@@ -139,7 +153,7 @@ Rezultat se čuva u `cppcheck/results/cppcheck_report.txt`.
 
 ## Izveštaj
 
-Detaljan opis postupka analize i dobijenih rezultata nalaziće se u fajlu:
+Detaljan opis postupka analize i dobijenih rezultata nalazi se u fajlu:
 
 ProjectAnalysisReport.md
 
@@ -147,6 +161,16 @@ ProjectAnalysisReport.md
 
 Analizom nije pronađen potvrđen bag u obuhvaćenoj verziji projekta `fmt`.
 
-Testovi, fuzzing, Valgrind Memcheck i sanitizeri nisu prijavili runtime probleme u analiziranim scenarijima. Perf analiza je pokazala očekivane hot spotove vezane za parsiranje i formatiranje, dok Cppcheck nije prijavio nalaz koji je ručnom proverom potvrđen kao greška.
+Dodatni unit testovi uspešno su prošli, a LCOV analiza pokazala je 26.0% line coverage i 20.9% function coverage nad analiziranim `fmt` kodom.
 
-Rezultati važe za korišćene ulaze, testove i WSL okruženje; ne predstavljaju dokaz odsustva svih mogućih problema u biblioteci.
+clang-format je u dva od tri odabrana reprezentativna fajla prijavio razlike u odnosu na format koji generiše korišćena konfiguracija, bez izmene izvornog koda. Za `fmt/src/os.cc` nisu prijavljene razlike.
+
+Valgrind Memcheck nije prijavio memorijske greške ni curenje memorije na putanjama izvršenim kroz dodatne testove.
+
+Perf analiza pokazala je hot spotove povezane sa parsiranjem format specifikacija, obradom format stringova i kopiranjem formatiranog sadržaja.
+
+Tokom početnog ASan/UBSan pokretanja prijavljena su dva UBSan nalaza u originalnom testnom kodu. Oba su pojedinačno reprodukovana i analizirana, a finalni sanitizer prolaz nije prijavio dodatne probleme na obuhvaćenim putanjama.
+
+Cppcheck je prijavio veći broj statičkih nalaza. Nekoliko reprezentativnih nalaza dodatno je ručno provereno u izvornom kodu i nijedan od njih nije potvrđen kao funkcionalna greška u biblioteci.
+
+Rezultati važe za korišćene ulaze, testove, konfiguraciju alata i WSL okruženje i ne predstavljaju dokaz odsustva svih mogućih problema u biblioteci.

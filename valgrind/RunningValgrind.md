@@ -15,7 +15,7 @@ Analizira se izvršni program:
 
 `unit_tests/build/format_edge_tests`
 
-On pokreće pet dodatnih unit testova nad javnim `fmt::format` API-jem.
+On pokreće 5 test slučajeva nad javnim `fmt::format` API-jem.
 
 ## Preduslovi
 
@@ -33,5 +33,23 @@ Analiza je izvršena sa verzijom:
 
 Iz korena seminarskog repozitorijuma pokrenuti:
 
-```bash
-./valgrind/run_memcheck.sh
+`./valgrind/run_memcheck.sh`
+
+Skripta prvo pravi Debug build test programa, a zatim pokreće Valgrind sa Memcheck alatom.
+
+Uključene su detaljna provera curenja memorije, prikaz svih tipova curenja i praćenje porekla neinicijalizovanih vrednosti. Rezultat analize čuva se u fajlu:
+
+`valgrind/results/memcheck.log`
+
+## Rezultat
+
+Memcheck nije prijavio memorijske greške.
+
+Dobijeni rezultat:
+
+- 0 bytes in 0 blocks pri završetku programa;
+- 233 allocs i 233 frees;
+- nema detektovanih curenja memorije;
+- ERROR SUMMARY: 0 errors from 0 contexts.
+
+Na osnovu ovog pokretanja nisu pronađeni problemi sa upravljanjem memorijom u kodu koji je izvršen kroz napisane testove.

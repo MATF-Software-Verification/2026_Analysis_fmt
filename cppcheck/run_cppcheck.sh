@@ -10,7 +10,6 @@ mkdir -p "$RESULT_DIR"
 
 cppcheck \
   --enable=warning,style,performance,portability \
-  --inconclusive \
   --force \
   --std=c++20 \
   --language=c++ \

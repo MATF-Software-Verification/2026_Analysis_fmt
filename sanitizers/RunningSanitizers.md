@@ -1,100 +1,216 @@
-# Running ASan and UBSan Analysis
+# ASan i UBSan analiza
 
-Za runtime proveru memorijske bezbednosti i nedefinisanog ponašanja koriste se **AddressSanitizer (ASan)** i **UndefinedBehaviorSanitizer (UBSan)**.
+Za dinamičku analizu memorijskih grešaka i nedefinisanog ponašanja korišćeni su **AddressSanitizer (ASan)** i **UndefinedBehaviorSanitizer (UBSan)**.
 
-## Cilj analize
+Analiza je sprovedena nad:
 
-ASan proverava probleme kao što su:
+- originalnim `fmt` testovima;
+- dodatnim testovima napravljenim u okviru projekta.
 
-- pristup memoriji van granica;
-- use-after-free;
-- use-after-return;
-- određene greške pri radu sa stekom i heap memorijom.
+Sanitizer analiza je izvršena pomoću Clang kompajlera.
 
-UBSan proverava određene oblike nedefinisanog ponašanja u C++ programu.
+## Pokretanje analize
 
-## Obuhvat analize
-
-Sanitizeri se pokreću nad:
-
-1. originalnim `fmt` test suite-om;
-2. pet dodatnih unit testova iz `unit_tests/tests/format_edge_tests.cpp`.
-
-Originalni test suite pokriva širok skup funkcionalnosti biblioteke, uključujući formatiranje, argumente, `chrono`, Unicode, `printf`, ranges i rad sa operativnim sistemom.
-
-## Pokretanje
-
-Iz korena repozitorijuma pokrenuti:
+Analiza se pokreće iz korenskog direktorijuma projekta:
 
 ```bash
 ./sanitizers/run_sanitizers.sh
 ```
 
-Skripta pravi dva odvojena Clang build-a:
+Skripta koristi sledeće sanitizer opcije:
 
-- `sanitizers/build/fmt/` — originalni `fmt` test suite;
-- `sanitizers/build/custom/` — dodatni unit testovi.
-
-Rezultati se čuvaju u:
-
-- `sanitizers/results/fmt_tests.log`;
-- `sanitizers/results/custom_tests.log`.
-
-## Korišćene opcije
-
-Testovi se kompajliraju sa opcijama:
-
-```text
--fsanitize=address,undefined
--fno-omit-frame-pointer
--O1
--g
+```bash
+SANITIZER_FLAGS="-fsanitize=address,undefined -fno-omit-frame-pointer -O1 -g"
+SANITIZER_LINK_FLAGS="-fsanitize=address,undefined"
 ```
 
-- `-fsanitize=address,undefined` uključuje ASan i UBSan;
-- `-fno-omit-frame-pointer` poboljšava stack trace pri prijavi problema;
-- `-O1` daje umerenu optimizaciju uz zadržavanje dobre dijagnostike;
-- `-g` uključuje simboličke informacije.
+Opcija `-fsanitize=address,undefined` uključuje AddressSanitizer i UndefinedBehaviorSanitizer.
 
-Skripta koristi i:
+ASan služi za otkrivanje problema sa memorijom, kao što su pristupi memoriji van dozvoljenih granica i korišćenje memorije nakon njenog oslobađanja.
 
-```text
+UBSan otkriva određene oblike nedefinisanog ponašanja u C++, kao što su nedozvoljene operacije nad pokazivačima i druge operacije koje prema C++ standardu imaju undefined behavior.
+
+Opcija `-fno-omit-frame-pointer` zadržava informacije koje sanitizerima olakšavaju prikazivanje čitljivog stack trace-a.
+
+Opcije `-O1 -g` koriste blagu optimizaciju i uključuju debug simbole, kako bi dijagnostika sanitizera sadržala korisne informacije o funkcijama, fajlovima i linijama izvornog koda.
+
+## Runtime podešavanja
+
+Sanitizer testovi se izvršavaju sa sledećim podešavanjima:
+
+```bash
 ASAN_OPTIONS=detect_leaks=0
 UBSAN_OPTIONS=halt_on_error=1:print_stacktrace=1
 ```
 
-`detect_leaks=0` isključuje samo LeakSanitizer, zbog poznatog WSL/`ptrace` ograničenja u ovom okruženju. ASan i UBSan ostaju aktivni.
+LeakSanitizer je isključen pomoću `detect_leaks=0` zbog ograničenja WSL okruženja vezanog za `ptrace`.
 
-## Posebno obrađeni test-only slučajevi
+Ovo isključuje samo detekciju curenja memorije. Ostale provere AddressSanitizera ostaju aktivne.
 
-Dva originalna test slučaja namerno koriste operacije koje UBSan prijavljuje pre provere očekivanog ponašanja:
+Za UBSan se koriste opcije `halt_on_error=1` i `print_stacktrace=1`, tako da se izvršavanje zaustavlja nakon UBSan prijave i prikazuje se stack trace koji olakšava određivanje mesta na kojem je problem nastao.
 
-- `memory_buffer_test.move_ctor_dynamic_buffer_non_propagating`;
-- `ostream_test.write_to_ostream_max_size`.
+## Analiza originalnih fmt testova
 
-Prvi koristi testni mock allocator sa praznim pokazivačem, a drugi koristi aritmetiku nad `nullptr` pri simulaciji maksimalne veličine stream izlaza.
+Originalni `fmt` testovi posebno se kompajliraju sa uključenim ASan i UBSan instrumentacijama.
 
-Ta dva konkretna test slučaja su izuzeta samo iz sanitizer izvršavanja. Svi ostali originalni testovi su pokrenuti:
+Za njih se koristi poseban build direktorijum:
 
-- 18 CTest test programa;
-- 137 testova u `format-test`;
-- 18 testova u `ostream-test`.
+```text
+sanitizers/build/fmt
+```
 
-Ovo izuzimanje je ograničeno na testni kod i ne predstavlja prikrivanje prijave iz `fmt` implementacije.
+Tokom početnog sanitizer pokretanja identifikovana su dva originalna testa koja pod UBSan-om proizvode prijave:
+
+- `memory_buffer_test.move_ctor_dynamic_buffer_non_propagating`
+- `ostream_test.write_to_ostream_max_size`
+
+Ovi testovi nisu automatski zanemareni. Oba su dodatno pokrenuta pojedinačno i njihove UBSan prijave su analizirane.
+
+### `memory_buffer_test.move_ctor_dynamic_buffer_non_propagating`
+
+Pojedinačnim pokretanjem testa dobijena je UBSan prijava:
+
+```text
+runtime error: reference binding to null pointer of type 'std::allocator<char>'
+```
+
+Prijava nastaje u `fmt/test/mock-allocator.h`, u testnom tipu `allocator_ref`.
+
+Test koristi `basic_memory_buffer` sa non-propagating allocatorom. Prvi buffer ima eksplicitno zadat allocator, dok se odredišni buffer pravi bez eksplicitno zadatog allocatora:
+
+```cpp
+basic_memory_buffer<char, 4, std_allocator_noprop> buffer2;
+buffer2 = std::move(buffer);
+```
+
+Pošto je allocator non-propagating, allocator iz izvornog buffera se ne prenosi na odredišni buffer. Tokom move operacije dolazi do potrebe za alokacijom, a testni `allocator_ref` u tom trenutku nema validan allocator pokazivač.
+
+UBSan zbog toga prijavljuje vezivanje reference za null pokazivač.
+
+Stack trace povezuje prijavu sa testom preko poziva:
+
+```text
+allocator_ref::allocate
+basic_memory_buffer::grow
+buffer::try_reserve
+basic_memory_buffer::resize
+basic_memory_buffer::move_alloc
+basic_memory_buffer::move
+basic_memory_buffer::operator=
+```
+
+Na osnovu toga zaključeno je da prijava potiče iz specifične konstrukcije testnog allocatora i ovog testnog scenarija, a ne predstavlja potvrđen problem u uobičajenom korišćenju `fmt` biblioteke.
+
+### `ostream_test.write_to_ostream_max_size`
+
+Pojedinačnim pokretanjem drugog testa dobijena je UBSan prijava:
+
+```text
+runtime error: applying non-zero offset 9223372036854775807 to null pointer
+```
+
+Prijava nastaje direktno u `fmt/test/ostream-test.cc` na operaciji:
+
+```cpp
+data += n;
+```
+
+pri čemu je pokazivač prethodno postavljen na:
+
+```cpp
+const char* data = nullptr;
+```
+
+Ovaj test proverava ponašanje funkcije za upisivanje veoma velikog buffera.
+
+Umesto stvarne alokacije buffera maksimalne veličine, test konstruiše specijalni testni buffer i koristi `nullptr` kao fiktivnu početnu adresu podataka. Zatim vrši pointer aritmetiku nad tim pokazivačem kako bi simulirao pomeranje kroz veoma veliki buffer.
+
+UBSan takvu operaciju prijavljuje kao undefined behavior, jer se nenulti offset dodaje na null pokazivač.
+
+Prijava zato nastaje direktno u specifičnoj konstrukciji testnog koda.
+
+## Izvršavanje ostatka originalnih testova
+
+Da se zbog dva prethodno analizirana slučaja ne bi izgubio ostatak testnog obuhvata, `format-test` i `ostream-test` se prvo izuzimaju iz opšteg `ctest` poziva:
+
+```bash
+ctest --test-dir "$FMT_BUILD_DIR"   --output-on-failure   -E '^(format-test|ostream-test)$'
+```
+
+Nakon toga se oba test programa pokreću direktno, ali se iz svakog izuzima samo jedan prethodno analizirani test slučaj.
+
+Za `format-test`:
+
+```bash
+"$FMT_BUILD_DIR/bin/format-test"   --gtest_filter=-memory_buffer_test.move_ctor_dynamic_buffer_non_propagating
+```
+
+Za `ostream-test`:
+
+```bash
+"$FMT_BUILD_DIR/bin/ostream-test"   --gtest_filter=-ostream_test.write_to_ostream_max_size
+```
+
+Na taj način nisu izuzeti čitavi testni programi, već samo dva konkretna testna slučaja kod kojih su UBSan prijave prethodno ručno analizirane.
+
+U finalnom sanitizer prolazu:
+
+- `ctest` deo je završio sa 18 od 18 uspešnih testova;
+- `format-test` je izvršio 137 testova iz 8 test suite-ova i svi su prošli;
+- `ostream-test` je izvršio 18 testova i svi su prošli.
+
+U tim izvršavanjima nije bilo ASan ni UBSan prijava.
+
+Rezultat originalnih testova čuva se u:
+
+```text
+sanitizers/results/fmt_tests.log
+```
+
+## Dodatni testovi
+
+Dodatni testovi se grade odvojeno u direktorijumu:
+
+```text
+sanitizers/build/custom
+```
+
+i takođe se kompajliraju sa ASan i UBSan instrumentacijom.
+
+Nakon build-a pokreće se:
+
+```text
+format_edge_tests
+```
+
+sa istim runtime sanitizer podešavanjima.
+
+Svih pet dodatnih testova je uspešno prošlo i tokom njihovog izvršavanja nisu primećene ASan ni UBSan prijave.
+
+Rezultat se čuva u:
+
+```text
+sanitizers/results/custom_tests.log
+```
 
 ## Rezultat
 
-Svi pokrenuti originalni i dodatni testovi su uspešno prošli.
+Tokom početne analize identifikovana su dva originalna test slučaja koja proizvode UBSan prijave zbog specifičnih konstrukcija u samom testnom kodu.
 
-Pretraga sačuvanih logova nije pronašla:
+Oba slučaja su pojedinačno pokrenuta i analizirana pre njihovog izuzimanja iz finalnog sanitizer prolaza.
 
-- `AddressSanitizer`;
-- `UndefinedBehaviorSanitizer`;
-- `runtime error`;
-- `ERROR:`.
+Nakon izuzimanja samo ta dva konkretna testa:
+
+- ostatak originalnog `fmt` test suite-a uspešno je prošao;
+- svih pet dodatnih testova uspešno je prošlo;
+- u izvršenim testovima nije bilo ASan ni UBSan prijava.
+
+LeakSanitizer nije bio uključen zbog ograničenja WSL okruženja, pa ovom analizom nije obuhvaćena detekcija curenja memorije.
 
 ## Zaključak
 
-U obuhvaćenim originalnim i dodatnim testovima ASan i UBSan nisu prijavili memory-safety problem niti nedefinisano ponašanje u analiziranoj implementaciji `fmt`.
+ASan i UBSan nisu otkrili potvrđen problem u `fmt` implementaciji na testnim putanjama obuhvaćenim finalnim sanitizer izvršavanjem.
 
-Ovaj rezultat ne dokazuje odsustvo svih mogućih problema u biblioteci, već potvrđuje odsustvo sanitizer prijava na izvršenim testnim putanjama i korišćenim ulazima.
+Dve UBSan prijave koje su se pojavile tokom početnog pokretanja detaljnije su analizirane i utvrđeno je da potiču iz specifičnih konstrukcija originalnog testnog koda.
+
+Rezultati ne predstavljaju dokaz da biblioteka ne sadrži druge probleme. Sanitizeri dinamički proveravaju samo kod koji je stvarno izvršen tokom testiranja.

@@ -1,0 +1,319 @@
+clang-format version:
+Ubuntu clang-format version 18.1.3 (1ubuntu1)
+
+Configuration: /home/dunja/projekatVS/2026_Analysis_fmt/fmt/.clang-format
+Checked files:
+include/fmt/base.h
+include/fmt/format.h
+src/os.cc
+
+include/fmt/base.h:1205:39: error: code should be clang-formatted [-Wclang-format-violations]
+  static auto map(T) -> conditional_t<
+                                      ^
+include/fmt/base.h:1206:38: error: code should be clang-formatted [-Wclang-format-violations]
+      std::is_same<T, char>::value || std::is_same<T, Char>::value, Char, void>;
+                                     ^
+include/fmt/base.h:1206:68: error: code should be clang-formatted [-Wclang-format-violations]
+      std::is_same<T, char>::value || std::is_same<T, Char>::value, Char, void>;
+                                                                   ^
+include/fmt/base.h:1412:39: error: code should be clang-formatted [-Wclang-format-violations]
+FMT_CONSTEXPR auto parse_dynamic_spec(const Char* begin, const Char* end,
+                                      ^
+include/fmt/base.h:1412:74: error: code should be clang-formatted [-Wclang-format-violations]
+FMT_CONSTEXPR auto parse_dynamic_spec(const Char* begin, const Char* end,
+                                                                         ^
+include/fmt/base.h:1413:70: error: code should be clang-formatted [-Wclang-format-violations]
+                                      int& value, arg_ref<Char>& ref,
+                                                                     ^
+include/fmt/base.h:1414:64: error: code should be clang-formatted [-Wclang-format-violations]
+                                      parse_context<Char>& ctx)
+                                                               ^
+include/fmt/base.h:1475:64: error: code should be clang-formatted [-Wclang-format-violations]
+                                      parse_context<Char>& ctx, type arg_type)
+                                                               ^
+include/fmt/base.h:1475:79: error: code should be clang-formatted [-Wclang-format-violations]
+                                      parse_context<Char>& ctx, type arg_type)
+                                                                              ^
+include/fmt/base.h:1611:55: error: code should be clang-formatted [-Wclang-format-violations]
+FMT_CONSTEXPR FMT_INLINE auto parse_replacement_field(const Char* begin,
+                                                      ^
+include/fmt/base.h:1611:73: error: code should be clang-formatted [-Wclang-format-violations]
+FMT_CONSTEXPR FMT_INLINE auto parse_replacement_field(const Char* begin,
+                                                                        ^
+include/fmt/base.h:1612:71: error: code should be clang-formatted [-Wclang-format-violations]
+                                                      const Char* end,
+                                                                      ^
+include/fmt/base.h:1613:73: error: code should be clang-formatted [-Wclang-format-violations]
+                                                      Handler&& handler)
+                                                                        ^
+include/fmt/base.h:1750:64: error: code should be clang-formatted [-Wclang-format-violations]
+  FMT_CONSTEXPR auto on_format_specs(int id, const Char* begin, const Char* end)
+                                                               ^
+include/fmt/base.h:1750:81: error: code should be clang-formatted [-Wclang-format-violations]
+  FMT_CONSTEXPR auto on_format_specs(int id, const Char* begin, const Char* end)
+                                                                                ^
+include/fmt/base.h:1856:11: error: code should be clang-formatted [-Wclang-format-violations]
+      void append(const U* begin, const U* end) {
+          ^
+include/fmt/base.h:2084:54: error: code should be clang-formatted [-Wclang-format-violations]
+FMT_CONSTEXPR20 auto copy(InputIt begin, InputIt end, OutputIt out)
+                                                     ^
+include/fmt/base.h:2084:68: error: code should be clang-formatted [-Wclang-format-violations]
+FMT_CONSTEXPR20 auto copy(InputIt begin, InputIt end, OutputIt out)
+                                                                   ^
+include/fmt/base.h:2096:54: error: code should be clang-formatted [-Wclang-format-violations]
+FMT_CONSTEXPR20 auto copy(InputIt begin, InputIt end, OutputIt out)
+                                                     ^
+include/fmt/base.h:2096:68: error: code should be clang-formatted [-Wclang-format-violations]
+FMT_CONSTEXPR20 auto copy(InputIt begin, InputIt end, OutputIt out)
+                                                                   ^
+include/fmt/base.h:2436:42: error: code should be clang-formatted [-Wclang-format-violations]
+  FMT_CONSTEXPR auto format(const T& val, FormatContext& ctx) const
+                                         ^
+include/fmt/base.h:2436:68: error: code should be clang-formatted [-Wclang-format-violations]
+  FMT_CONSTEXPR auto format(const T& val, FormatContext& ctx) const
+                                                                   ^
+include/fmt/base.h:2572:58: error: code should be clang-formatted [-Wclang-format-violations]
+                     parse_context<char_type>& parse_ctx, Context& ctx)
+                                                         ^
+include/fmt/base.h:2572:72: error: code should be clang-formatted [-Wclang-format-violations]
+                     parse_context<char_type>& parse_ctx, Context& ctx)
+                                                                       ^
+include/fmt/base.h:2860:49: error: code should be clang-formatted [-Wclang-format-violations]
+auto vformat_to(OutputIt&& out, string_view fmt, format_args args)
+                                                ^
+include/fmt/base.h:2860:67: error: code should be clang-formatted [-Wclang-format-violations]
+auto vformat_to(OutputIt&& out, string_view fmt, format_args args)
+                                                                  ^
+include/fmt/base.h:2880:67: error: code should be clang-formatted [-Wclang-format-violations]
+FMT_INLINE auto format_to(OutputIt&& out, format_string<T...> fmt, T&&... args)
+                                                                  ^
+include/fmt/base.h:2880:80: error: code should be clang-formatted [-Wclang-format-violations]
+FMT_INLINE auto format_to(OutputIt&& out, format_string<T...> fmt, T&&... args)
+                                                                               ^
+include/fmt/base.h:2894:59: error: code should be clang-formatted [-Wclang-format-violations]
+auto vformat_to_n(OutputIt out, size_t n, string_view fmt, format_args args)
+                                                          ^
+include/fmt/base.h:2894:77: error: code should be clang-formatted [-Wclang-format-violations]
+auto vformat_to_n(OutputIt out, size_t n, string_view fmt, format_args args)
+                                                                            ^
+include/fmt/base.h:2929:49: error: code should be clang-formatted [-Wclang-format-violations]
+auto vformat_to(char (&out)[N], string_view fmt, format_args args)
+                                                ^
+include/fmt/base.h:2929:67: error: code should be clang-formatted [-Wclang-format-violations]
+auto vformat_to(char (&out)[N], string_view fmt, format_args args)
+                                                                  ^
+include/fmt/base.h:2936:67: error: code should be clang-formatted [-Wclang-format-violations]
+FMT_INLINE auto format_to(char (&out)[N], format_string<T...> fmt, T&&... args)
+                                                                  ^
+include/fmt/base.h:2936:80: error: code should be clang-formatted [-Wclang-format-violations]
+FMT_INLINE auto format_to(char (&out)[N], format_string<T...> fmt, T&&... args)
+                                                                               ^
+include/fmt/format.h:354:67: error: code should be clang-formatted [-Wclang-format-violations]
+  friend FMT_CONSTEXPR auto operator*(const uint128_fallback& lhs, uint32_t rhs)
+                                                                  ^
+include/fmt/format.h:354:81: error: code should be clang-formatted [-Wclang-format-violations]
+  friend FMT_CONSTEXPR auto operator*(const uint128_fallback& lhs, uint32_t rhs)
+                                                                                ^
+include/fmt/format.h:362:63: error: code should be clang-formatted [-Wclang-format-violations]
+  friend constexpr auto operator-(const uint128_fallback& lhs, uint64_t rhs)
+                                                              ^
+include/fmt/format.h:362:77: error: code should be clang-formatted [-Wclang-format-violations]
+  friend constexpr auto operator-(const uint128_fallback& lhs, uint64_t rhs)
+                                                                            ^
+include/fmt/format.h:496:28: error: code should be clang-formatted [-Wclang-format-violations]
+FMT_CONSTEXPR20 inline auto reserve(OutputIt it, size_t n) ->
+                           ^
+include/fmt/format.h:496:62: error: code should be clang-formatted [-Wclang-format-violations]
+FMT_CONSTEXPR20 inline auto reserve(OutputIt it, size_t n) ->
+                                                             ^
+include/fmt/format.h:505:58: error: code should be clang-formatted [-Wclang-format-violations]
+FMT_CONSTEXPR20 inline auto reserve(basic_appender<T> it, size_t n)
+                                                         ^
+include/fmt/format.h:505:68: error: code should be clang-formatted [-Wclang-format-violations]
+FMT_CONSTEXPR20 inline auto reserve(basic_appender<T> it, size_t n)
+                                                                   ^
+include/fmt/format.h:543:27: error: code should be clang-formatted [-Wclang-format-violations]
+inline auto base_iterator(OutputIt it,
+                          ^
+include/fmt/format.h:543:39: error: code should be clang-formatted [-Wclang-format-violations]
+inline auto base_iterator(OutputIt it,
+                                      ^
+include/fmt/format.h:544:74: error: code should be clang-formatted [-Wclang-format-violations]
+                          typename OutputIt::container_type::value_type*)
+                                                                         ^
+include/fmt/format.h:557:52: error: code should be clang-formatted [-Wclang-format-violations]
+FMT_CONSTEXPR auto fill_n(OutputIt out, Size count, const T& value)
+                                                   ^
+include/fmt/format.h:557:68: error: code should be clang-formatted [-Wclang-format-violations]
+FMT_CONSTEXPR auto fill_n(OutputIt out, Size count, const T& value)
+                                                                   ^
+include/fmt/format.h:594:66: error: code should be clang-formatted [-Wclang-format-violations]
+FMT_CONSTEXPR inline auto utf8_decode(const char* s, uint32_t* c, int* e)
+                                                                 ^
+include/fmt/format.h:594:74: error: code should be clang-formatted [-Wclang-format-violations]
+FMT_CONSTEXPR inline auto utf8_decode(const char* s, uint32_t* c, int* e)
+                                                                         ^
+include/fmt/format.h:1215:62: error: code should be clang-formatted [-Wclang-format-violations]
+FMT_CONSTEXPR20 auto do_format_decimal(Char* out, UInt value, int size)
+                                                             ^
+include/fmt/format.h:1215:72: error: code should be clang-formatted [-Wclang-format-violations]
+FMT_CONSTEXPR20 auto do_format_decimal(Char* out, UInt value, int size)
+                                                                       ^
+include/fmt/format.h:1245:60: error: code should be clang-formatted [-Wclang-format-violations]
+FMT_CONSTEXPR auto format_decimal(OutputIt out, UInt value, int num_digits)
+                                                           ^
+include/fmt/format.h:1245:76: error: code should be clang-formatted [-Wclang-format-violations]
+FMT_CONSTEXPR auto format_decimal(OutputIt out, UInt value, int num_digits)
+                                                                           ^
+include/fmt/format.h:1282:56: error: code should be clang-formatted [-Wclang-format-violations]
+                                        int num_digits, bool upper = false)
+                                                       ^
+include/fmt/format.h:1282:76: error: code should be clang-formatted [-Wclang-format-violations]
+                                        int num_digits, bool upper = false)
+                                                                           ^
+include/fmt/format.h:1447:41: error: code should be clang-formatted [-Wclang-format-violations]
+inline auto umul192_upper128(uint64_t x, uint128_fallback y) noexcept
+                                        ^
+include/fmt/format.h:1447:70: error: code should be clang-formatted [-Wclang-format-violations]
+inline auto umul192_upper128(uint64_t x, uint128_fallback y) noexcept
+                                                                     ^
+include/fmt/format.h:1729:44: error: code should be clang-formatted [-Wclang-format-violations]
+auto write_ptr(OutputIt out, UIntPtr value, const format_specs* specs)
+                                           ^
+include/fmt/format.h:1729:71: error: code should be clang-formatted [-Wclang-format-violations]
+auto write_ptr(OutputIt out, UIntPtr value, const format_specs* specs)
+                                                                      ^
+include/fmt/format.h:1758:36: error: code should be clang-formatted [-Wclang-format-violations]
+auto find_escape(const Char* begin, const Char* end)
+                                   ^
+include/fmt/format.h:1758:53: error: code should be clang-formatted [-Wclang-format-violations]
+auto find_escape(const Char* begin, const Char* end)
+                                                    ^
+include/fmt/format.h:1768:43: error: code should be clang-formatted [-Wclang-format-violations]
+inline auto find_escape(const char* begin, const char* end)
+                                          ^
+include/fmt/format.h:1768:60: error: code should be clang-formatted [-Wclang-format-violations]
+inline auto find_escape(const char* begin, const char* end)
+                                                           ^
+include/fmt/format.h:1794:36: error: code should be clang-formatted [-Wclang-format-violations]
+auto write_escaped_cp(OutputIt out, const find_escape_result<Char>& escape)
+                                   ^
+include/fmt/format.h:1794:76: error: code should be clang-formatted [-Wclang-format-violations]
+auto write_escaped_cp(OutputIt out, const find_escape_result<Char>& escape)
+                                                                           ^
+include/fmt/format.h:1831:40: error: code should be clang-formatted [-Wclang-format-violations]
+auto write_escaped_string(OutputIt out, basic_string_view<Char> str)
+                                       ^
+include/fmt/format.h:1831:69: error: code should be clang-formatted [-Wclang-format-violations]
+auto write_escaped_string(OutputIt out, basic_string_view<Char> str)
+                                                                    ^
+include/fmt/format.h:1945:42: error: code should be clang-formatted [-Wclang-format-violations]
+               const format_specs& specs, const digit_grouping<Char>& grouping)
+                                         ^
+include/fmt/format.h:1945:80: error: code should be clang-formatted [-Wclang-format-violations]
+               const format_specs& specs, const digit_grouping<Char>& grouping)
+                                                                               ^
+include/fmt/format.h:2131:52: error: code should be clang-formatted [-Wclang-format-violations]
+FMT_CONSTEXPR FMT_NOINLINE auto write_int_noinline(OutputIt out,
+                                                   ^
+include/fmt/format.h:2131:65: error: code should be clang-formatted [-Wclang-format-violations]
+FMT_CONSTEXPR FMT_NOINLINE auto write_int_noinline(OutputIt out,
+                                                                ^
+include/fmt/format.h:2132:73: error: code should be clang-formatted [-Wclang-format-violations]
+                                                   write_int_arg<T> arg,
+                                                                        ^
+include/fmt/format.h:2133:78: error: code should be clang-formatted [-Wclang-format-violations]
+                                                   const format_specs& specs)
+                                                                             ^
+include/fmt/format.h:2143:63: error: code should be clang-formatted [-Wclang-format-violations]
+                                    const format_specs& specs, locale_ref loc)
+                                                              ^
+include/fmt/format.h:2143:79: error: code should be clang-formatted [-Wclang-format-violations]
+                                    const format_specs& specs, locale_ref loc)
+                                                                              ^
+include/fmt/format.h:2157:63: error: code should be clang-formatted [-Wclang-format-violations]
+                                    const format_specs& specs, locale_ref loc)
+                                                              ^
+include/fmt/format.h:2157:79: error: code should be clang-formatted [-Wclang-format-violations]
+                                    const format_specs& specs, locale_ref loc)
+                                                                              ^
+include/fmt/format.h:3580:55: error: code should be clang-formatted [-Wclang-format-violations]
+auto write(OutputIt out, monostate, format_specs = {}, locale_ref = {})
+                                                      ^
+include/fmt/format.h:3580:72: error: code should be clang-formatted [-Wclang-format-violations]
+auto write(OutputIt out, monostate, format_specs = {}, locale_ref = {})
+                                                                       ^
+include/fmt/format.h:3587:39: error: code should be clang-formatted [-Wclang-format-violations]
+FMT_CONSTEXPR auto write(OutputIt out, basic_string_view<Char> value)
+                                      ^
+include/fmt/format.h:3587:70: error: code should be clang-formatted [-Wclang-format-violations]
+FMT_CONSTEXPR auto write(OutputIt out, basic_string_view<Char> value)
+                                                                     ^
+include/fmt/format.h:3789:50: error: code should be clang-formatted [-Wclang-format-violations]
+  auto on_format_specs(int id, const Char* begin, const Char* end)
+                                                 ^
+include/fmt/format.h:3789:67: error: code should be clang-formatted [-Wclang-format-violations]
+  auto on_format_specs(int id, const Char* begin, const Char* end)
+                                                                  ^
+include/fmt/format.h:3917:40: error: code should be clang-formatted [-Wclang-format-violations]
+  auto put(appender out, loc_value val, const format_specs& specs) const
+                                       ^
+include/fmt/format.h:3917:73: error: code should be clang-formatted [-Wclang-format-violations]
+  auto put(appender out, loc_value val, const format_specs& specs) const
+                                                                        ^
+include/fmt/format.h:3966:44: error: code should be clang-formatted [-Wclang-format-violations]
+  FMT_CONSTEXPR auto format(const T& value, FormatContext& ctx) const
+                                           ^
+include/fmt/format.h:3966:70: error: code should be clang-formatted [-Wclang-format-violations]
+  FMT_CONSTEXPR auto format(const T& value, FormatContext& ctx) const
+                                                                     ^
+include/fmt/format.h:4074:41: error: code should be clang-formatted [-Wclang-format-violations]
+  auto format(group_digits_view<T> view, FormatContext& ctx) const
+                                        ^
+include/fmt/format.h:4074:67: error: code should be clang-formatted [-Wclang-format-violations]
+  auto format(group_digits_view<T> view, FormatContext& ctx) const
+                                                                  ^
+include/fmt/format.h:4099:41: error: code should be clang-formatted [-Wclang-format-violations]
+  auto format(nested_view<T, Char> view, FormatContext& ctx) const
+                                        ^
+include/fmt/format.h:4099:67: error: code should be clang-formatted [-Wclang-format-violations]
+  auto format(nested_view<T, Char> view, FormatContext& ctx) const
+                                                                  ^
+include/fmt/format.h:4262:60: error: code should be clang-formatted [-Wclang-format-violations]
+FMT_API auto vsystem_error(int error_code, string_view fmt, format_args args)
+                                                           ^
+include/fmt/format.h:4262:78: error: code should be clang-formatted [-Wclang-format-violations]
+FMT_API auto vsystem_error(int error_code, string_view fmt, format_args args)
+                                                                             ^
+include/fmt/format.h:4281:59: error: code should be clang-formatted [-Wclang-format-violations]
+auto system_error(int error_code, format_string<T...> fmt, T&&... args)
+                                                          ^
+include/fmt/format.h:4281:72: error: code should be clang-formatted [-Wclang-format-violations]
+auto system_error(int error_code, format_string<T...> fmt, T&&... args)
+                                                                       ^
+include/fmt/format.h:4306:53: error: code should be clang-formatted [-Wclang-format-violations]
+inline auto vformat(locale_ref loc, string_view fmt, format_args args)
+                                                    ^
+include/fmt/format.h:4306:71: error: code should be clang-formatted [-Wclang-format-violations]
+inline auto vformat(locale_ref loc, string_view fmt, format_args args)
+                                                                      ^
+include/fmt/format.h:4314:64: error: code should be clang-formatted [-Wclang-format-violations]
+FMT_INLINE auto format(locale_ref loc, format_string<T...> fmt, T&&... args)
+                                                               ^
+include/fmt/format.h:4314:77: error: code should be clang-formatted [-Wclang-format-violations]
+FMT_INLINE auto format(locale_ref loc, format_string<T...> fmt, T&&... args)
+                                                                            ^
+include/fmt/format.h:4321:63: error: code should be clang-formatted [-Wclang-format-violations]
+auto vformat_to(OutputIt out, locale_ref loc, string_view fmt, format_args args)
+                                                              ^
+include/fmt/format.h:4321:81: error: code should be clang-formatted [-Wclang-format-violations]
+auto vformat_to(OutputIt out, locale_ref loc, string_view fmt, format_args args)
+                                                                                ^
+include/fmt/format.h:4356:62: error: code should be clang-formatted [-Wclang-format-violations]
+FMT_NODISCARD FMT_INLINE auto format(format_string<T...> fmt, T&&... args)
+                                                             ^
+include/fmt/format.h:4356:75: error: code should be clang-formatted [-Wclang-format-violations]
+FMT_NODISCARD FMT_INLINE auto format(format_string<T...> fmt, T&&... args)
+                                                                          ^
+Result: formatting differences were detected.

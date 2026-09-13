@@ -10,6 +10,7 @@ WORKLOAD_SOURCE="$PERF_DIR/format_workload.cpp"
 WORKLOAD_BINARY="$BUILD_DIR/format_workload"
 PERF_DATA="$RESULT_DIR/perf.data"
 PERF_REPORT="$RESULT_DIR/perf_report.txt"
+PERF_FLAT_REPORT="$RESULT_DIR/perf_flat_report.txt"
 
 PERF_BIN="${PERF_BIN:-/usr/lib/linux-tools/6.8.0-139-generic/perf}"
 
@@ -41,5 +42,13 @@ c++ \
   -i "$PERF_DATA" \
   > "$PERF_REPORT"
 
+"$PERF_BIN" report \
+  --stdio \
+  --no-children \
+  --sort symbol \
+  -i "$PERF_DATA" \
+  > "$PERF_FLAT_REPORT"
+
 echo "Hot spot analysis completed successfully."
 echo "Report: $PERF_REPORT"
+echo "Flat report: $PERF_FLAT_REPORT"

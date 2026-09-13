@@ -22,29 +22,26 @@ Analiza je testirana sa:
 
 ## Pokretanje
 
-Iz korena seminarskog repozitorijuma pokrenuti:
+Iz korena repozitorijuma pokrenuti:
 
 ```bash
 ./unit_tests/run_tests.sh
 ```
 
-Skripta automatski:
+Skripta pravi novi coverage build, kompajlira projekat i testove, pokreće testove i zatim pomoću LCOV-a prikuplja podatke o pokrivenosti.
 
-* pravi coverage build,
-* kompajlira `fmt`, Google Test i napisane testove,
-* pokreće testove,
-* prikuplja coverage podatke,
-* filtrira sistemske biblioteke i test framework,
-* generiše LCOV HTML izveštaj.
+Iz rezultata se uklanjaju sistemske biblioteke, Google Test i sami test fajlovi, nakon čega se generiše HTML izveštaj.
 
 ## Rezultat
 
-Trenutno je napisano 5 unit testova i svi uspešno prolaze.
+Napisano je 5 test slučajeva i svi uspešno prolaze.
 
 Dobijena pokrivenost `fmt` koda:
 
 * Line coverage: **26.0%**
 * Function coverage: **20.9%**
+
+Relativno niska ukupna pokrivenost je očekivana, jer je `fmt` znatno veći projekat, dok su napisani testovi usmereni na nekoliko izabranih slučajeva formatiranja.
 
 HTML izveštaj se lokalno generiše u:
 

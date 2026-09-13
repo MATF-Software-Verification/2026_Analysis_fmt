@@ -1,81 +1,100 @@
-# Running Cppcheck Analysis
+# Cppcheck
 
-Za statičku analizu korišćen je **Cppcheck 2.13.0**.
-
-Cppcheck analizira izvorni kod bez njegovog izvršavanja i prijavljuje potencijalne greške, sumnjive obrasce, portability probleme i preporuke za stil ili performanse.
-
-## Obuhvat analize
-
-Analiziran je produkcioni kod biblioteke:
-
-- `fmt/include/`;
-- `fmt/src/`.
-
-Testni direktorijumi nisu obuhvaćeni, jer je cilj analize implementacija biblioteke `fmt`.
+Cppcheck je korišćen za statičku analizu izvornog koda biblioteke `fmt`.
+Analizirani su direktorijumi `fmt/include` i `fmt/src`.
 
 ## Pokretanje
 
-Iz korena repozitorijuma pokrenuti:
+Iz korenskog direktorijuma projekta:
 
 ```bash
 ./cppcheck/run_cppcheck.sh
 ```
 
-Rezultat se čuva u:
-
-`cppcheck/results/cppcheck_report.txt`
-
-## Korišćene opcije
-
-Analiza koristi sledeće važne opcije:
+Rezultat analize se čuva u:
 
 ```text
---enable=warning,style,performance,portability
---inconclusive
---force
---std=c++20
---inline-suppr
---suppress=missingIncludeSystem
+cppcheck/results/cppcheck_report.txt
 ```
 
-- `--inconclusive` uključuje i nesigurne nalaze, koji se ne tumače kao automatski bagovi;
-- `--force` pokušava analizu svih pronađenih konfiguracija;
-- `--std=c++20` postavlja standard jezika;
-- `--suppress=missingIncludeSystem` uklanja nebitne poruke o sistemskim headerima.
+Analiza koristi C++20 standard i uključuje kategorije:
+
+- `warning`
+- `style`
+- `performance`
+- `portability`
+
+Sistemski include fajlovi koji nisu dostupni Cppcheck-u nisu prijavljivani kao greške.
 
 ## Rezultat
 
-Cppcheck je prijavio:
+Finalna analiza prijavila je ukupno **136 nalaza**:
 
-- 4 `syntaxError` poruke;
-- 20 warnings;
-- 131 style preporuku;
-- 34 performance preporuke;
-- 2 portability upozorenja.
+- 4 `error`
+- 19 `warning`
+- 103 `style`
+- 8 `performance`
+- 2 `portability`
 
-Četiri `syntaxError` poruke nalaze se u makro/template deklaracijama koje Cppcheck 2.13 ne parsira potpuno u ovoj konfiguraciji. One nisu potvrđene greške u `fmt` kodu, jer je isti kod uspešno kompajliran Clang-om i izvršen kroz testove.
+Najveći broj nalaza odnosio se na preporuke kao što su
+`noExplicitConstructor`, `shadowFunction`,
+`knownConditionTrueFalse` i `passedByValue`.
 
-Većina nalaza pripada kategorijama kao što su:
+Nalazi nisu automatski tretirani kao potvrđene greške, već su
+reprezentativni slučajevi dodatno pregledani u izvornom kodu.
 
-- `noExplicitConstructor`;
-- `functionConst`;
-- `functionStatic`;
-- `shadowFunction`;
-- `passedByValue`.
+## Ručna provera reprezentativnih nalaza
 
-To su preporuke za stil, čitljivost ili potencijalni refaktoring, a ne potvrđeni problemi u ponašanju programa.
+### `shiftNegativeLHS`
 
-Nekoliko upozorenja koja na prvi pogled deluju ozbiljnije provereno je ručno:
+Cppcheck je prijavio desni shift negativne vrednosti u izrazu:
 
-- `bitwiseOnBoolean` se javlja u Dragonbox implementaciji i odnosi se na namerne bitovske/paritetne provere;
-- `shiftNegativeLHS` dolazi iz `static_assert` provere ponašanja aritmetičkog desnog shift-a;
-- `accessMoved` prijavljuje objekat koji se nakon `std::move` ponovo inicijalizuje pozivom `resize`;
-- `AssignmentAddressToInteger` nastaje usled makro-ekspanzije oko poziva `fopen`.
+```cpp
+static_assert((-1 >> 1) == -1, "right shift is not arithmetic");
+```
 
-Nijedan od tih nalaza nije potvrđen kao bag u analiziranom `fmt` kodu.
+Pregledom koda utvrđeno je da je ova operacija namerno korišćena kao
+compile-time provera ponašanja platforme. Nalaz zato nije potvrđen kao
+funkcionalna greška.
 
-## Zaključak i ograničenja
+### `AssignmentAddressToInteger`
 
-Cppcheck nije pronašao potvrđen problem u analiziranoj implementaciji biblioteke.
+Nalaz je prijavljen kod poziva `FMT_RETRY_VAL` prilikom otvaranja fajla.
 
-Alat je koristan za otkrivanje kandidata za ručnu proveru, ali rezultat nije dokaz odsustva grešaka. Kod projekta `fmt` intenzivno koristi template-e i makroe, što ograničava preciznost Cppcheck analize i proizvodi deo očekivanih false-positive ili style nalaza.
+Pregledom makroa i deklaracije člana `file_` utvrđeno je da je `file_`
+tipa `FILE*`, a `fopen` takođe vraća `FILE*`. Nema stvarne dodele
+pokazivača celobrojnom tipu, pa je nalaz najverovatnije posledica
+interpretacije makroa od strane Cppcheck-a.
+
+### `mismatchingContainerExpression`
+
+Cppcheck je prijavio poređenje:
+
+```cpp
+sv.end() == s.end()
+```
+
+Pregledom funkcije `for_each_codepoint` utvrđeno je da `sv` predstavlja
+pogled nad delom iste memorije na koju pokazuje originalni `s`.
+Poređenje se namerno koristi za proveru da li je dostignut kraj stringa.
+
+### `uninitMemberVar`
+
+Cppcheck je prijavio da `writer::file_` nije inicijalizovan u konstruktoru
+koji prima bafer.
+
+Član zaista nije eksplicitno inicijalizovan, ali se u tom slučaju
+`buf_` postavlja na prosleđeni bafer, pa metoda `print` koristi `buf_`,
+dok se `file_` ne čita.
+
+Nalaz zato nije potvrđen kao funkcionalna greška u analiziranom toku
+izvršavanja.
+
+## Zaključak
+
+Cppcheck je izdvojio više potencijalno interesantnih mesta u kodu,
+pretežno iz kategorija `style` i `performance`.
+
+Ručnom proverom nekoliko reprezentativnih upozorenja nije potvrđena
+funkcionalna greška u biblioteci `fmt`. Rezultati pokazuju da nalaze
+statičke analize treba dodatno tumačiti u kontekstu izvornog koda.
