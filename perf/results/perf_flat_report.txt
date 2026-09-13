@@ -1,0 +1,760 @@
+# To display the perf.data header info, please use --header/--header-only options.
+#
+#
+# Total Lost Samples: 0
+#
+# Samples: 6K of event 'cycles:Pu'
+# Event count (approx.): 7690379400
+#
+# Overhead  Symbol                                                                                                                                                                                                                                                                                                                                     IPC   [IPC Coverage]
+# ........  .........................................................................................................................................................................................................................................................................................................................................  ....................
+#
+    14.17%  [.] fmt::v12::detail::format_handler<char>::on_format_specs(int, char const*, char const*)                                                                                                                                                                                                                                                 -      -            
+            |          
+            |--3.76%--void fmt::v12::detail::arg_formatter<char>::operator()<unsigned __int128, 0>(unsigned __int128) (inlined)
+            |          decltype ({parm#1}(0)) fmt::v12::basic_format_arg<fmt::v12::context>::visit<fmt::v12::detail::arg_formatter<char> >(fmt::v12::detail::arg_formatter<char>&&) const (inlined)
+            |          fmt::v12::detail::format_handler<char>::on_format_specs(int, char const*, char const*)
+            |          char const* fmt::v12::detail::parse_replacement_field<char, fmt::v12::detail::format_handler<char>&>(char const*, char const*, fmt::v12::detail::format_handler<char>&) (inlined)
+            |          void fmt::v12::detail::parse_format_string<char, fmt::v12::detail::format_handler<char> >(fmt::v12::basic_string_view<char>, fmt::v12::detail::format_handler<char>&&)
+            |          fmt::v12::detail::vformat_to(fmt::v12::detail::buffer<char>&, fmt::v12::basic_string_view<char>, fmt::v12::basic_format_args<fmt::v12::context>, fmt::v12::locale_ref)
+            |          fmt::v12::vformat[abi:cxx11](fmt::v12::basic_string_view<char>, fmt::v12::basic_format_args<fmt::v12::context>)
+            |          std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > fmt::v12::format<double>(fmt::v12::fstring<double>::t, double&&) (inlined)
+            |          main
+            |          __libc_start_call_main
+            |          __libc_start_main_impl (inlined)
+            |          _start
+            |          
+            |--2.97%--fmt::v12::detail::format_handler<char>::on_format_specs(int, char const*, char const*)
+            |          char const* fmt::v12::detail::parse_replacement_field<char, fmt::v12::detail::format_handler<char>&>(char const*, char const*, fmt::v12::detail::format_handler<char>&) (inlined)
+            |          void fmt::v12::detail::parse_format_string<char, fmt::v12::detail::format_handler<char> >(fmt::v12::basic_string_view<char>, fmt::v12::detail::format_handler<char>&&)
+            |          fmt::v12::detail::vformat_to(fmt::v12::detail::buffer<char>&, fmt::v12::basic_string_view<char>, fmt::v12::basic_format_args<fmt::v12::context>, fmt::v12::locale_ref)
+            |          fmt::v12::vformat[abi:cxx11](fmt::v12::basic_string_view<char>, fmt::v12::basic_format_args<fmt::v12::context>)
+            |          |          
+            |          |--1.82%--std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > fmt::v12::format<char const (&) [4], int&>(fmt::v12::fstring<char const (&) [4], int&>::t, char const (&) [4], int&) (inlined)
+            |          |          main
+            |          |          __libc_start_call_main
+            |          |          __libc_start_main_impl (inlined)
+            |          |          _start
+            |          |          
+            |           --0.79%--std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > fmt::v12::format<int&>(fmt::v12::fstring<int&>::t, int&) (inlined)
+            |                     main
+            |                     __libc_start_call_main
+            |                     __libc_start_main_impl (inlined)
+            |                     _start
+            |          
+            |--2.83%--fmt::v12::basic_appender<char> fmt::v12::detail::write<char, fmt::v12::basic_appender<char>, double, 0>(fmt::v12::basic_appender<char>, double, fmt::v12::format_specs, fmt::v12::locale_ref) (inlined)
+            |          void fmt::v12::detail::arg_formatter<char>::operator()<double, 0>(double) (inlined)
+            |          decltype ({parm#1}(0)) fmt::v12::basic_format_arg<fmt::v12::context>::visit<fmt::v12::detail::arg_formatter<char> >(fmt::v12::detail::arg_formatter<char>&&) const (inlined)
+            |          fmt::v12::detail::format_handler<char>::on_format_specs(int, char const*, char const*)
+            |          char const* fmt::v12::detail::parse_replacement_field<char, fmt::v12::detail::format_handler<char>&>(char const*, char const*, fmt::v12::detail::format_handler<char>&) (inlined)
+            |          void fmt::v12::detail::parse_format_string<char, fmt::v12::detail::format_handler<char> >(fmt::v12::basic_string_view<char>, fmt::v12::detail::format_handler<char>&&)
+            |          fmt::v12::detail::vformat_to(fmt::v12::detail::buffer<char>&, fmt::v12::basic_string_view<char>, fmt::v12::basic_format_args<fmt::v12::context>, fmt::v12::locale_ref)
+            |          fmt::v12::vformat[abi:cxx11](fmt::v12::basic_string_view<char>, fmt::v12::basic_format_args<fmt::v12::context>)
+            |          std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > fmt::v12::format<double>(fmt::v12::fstring<double>::t, double&&) (inlined)
+            |          main
+            |          __libc_start_call_main
+            |          __libc_start_main_impl (inlined)
+            |          _start
+            |          
+            |--2.19%--fmt::v12::basic_format_args<fmt::v12::context>::get(int) const (inlined)
+            |          fmt::v12::context::arg(int) const (inlined)
+            |          fmt::v12::detail::format_handler<char>::on_format_specs(int, char const*, char const*)
+            |          char const* fmt::v12::detail::parse_replacement_field<char, fmt::v12::detail::format_handler<char>&>(char const*, char const*, fmt::v12::detail::format_handler<char>&) (inlined)
+            |          void fmt::v12::detail::parse_format_string<char, fmt::v12::detail::format_handler<char> >(fmt::v12::basic_string_view<char>, fmt::v12::detail::format_handler<char>&&)
+            |          fmt::v12::detail::vformat_to(fmt::v12::detail::buffer<char>&, fmt::v12::basic_string_view<char>, fmt::v12::basic_format_args<fmt::v12::context>, fmt::v12::locale_ref)
+            |          fmt::v12::vformat[abi:cxx11](fmt::v12::basic_string_view<char>, fmt::v12::basic_format_args<fmt::v12::context>)
+            |          |          
+            |          |--1.18%--std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > fmt::v12::format<int&>(fmt::v12::fstring<int&>::t, int&) (inlined)
+            |          |          main
+            |          |          __libc_start_call_main
+            |          |          __libc_start_main_impl (inlined)
+            |          |          _start
+            |          |          
+            |           --0.99%--std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > fmt::v12::format<char const (&) [4], int&>(fmt::v12::fstring<char const (&) [4], int&>::t, char const (&) [4], int&) (inlined)
+            |                     main
+            |                     __libc_start_call_main
+            |                     __libc_start_main_impl (inlined)
+            |                     _start
+            |          
+             --1.24%--fmt::v12::basic_format_arg<fmt::v12::context>::format_custom(char const*, fmt::v12::parse_context<char>&, fmt::v12::context&) (inlined)
+                       fmt::v12::detail::format_handler<char>::on_format_specs(int, char const*, char const*)
+                       char const* fmt::v12::detail::parse_replacement_field<char, fmt::v12::detail::format_handler<char>&>(char const*, char const*, fmt::v12::detail::format_handler<char>&) (inlined)
+                       void fmt::v12::detail::parse_format_string<char, fmt::v12::detail::format_handler<char> >(fmt::v12::basic_string_view<char>, fmt::v12::detail::format_handler<char>&&)
+                       fmt::v12::detail::vformat_to(fmt::v12::detail::buffer<char>&, fmt::v12::basic_string_view<char>, fmt::v12::basic_format_args<fmt::v12::context>, fmt::v12::locale_ref)
+                       fmt::v12::vformat[abi:cxx11](fmt::v12::basic_string_view<char>, fmt::v12::basic_format_args<fmt::v12::context>)
+                       |          
+                        --0.91%--std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > fmt::v12::format<char const (&) [4], int&>(fmt::v12::fstring<char const (&) [4], int&>::t, char const (&) [4], int&) (inlined)
+                                  main
+                                  __libc_start_call_main
+                                  __libc_start_main_impl (inlined)
+                                  _start
+
+     9.49%  [.] fmt::v12::basic_appender<char> fmt::v12::detail::copy_noinline<char, char const*, fmt::v12::basic_appender<char> >(char const*, char const*, fmt::v12::basic_appender<char>)                                                                                                                                                           -      -            
+            |          
+            |--7.09%--void fmt::v12::detail::buffer<char>::append<char>(char const*, char const*) (inlined)
+            |          fmt::v12::basic_appender<char> fmt::v12::detail::copy<char, char const*, fmt::v12::basic_appender<char>, 0>(char const*, char const*, fmt::v12::basic_appender<char>) (inlined)
+            |          fmt::v12::basic_appender<char> fmt::v12::detail::copy_noinline<char, char const*, fmt::v12::basic_appender<char> >(char const*, char const*, fmt::v12::basic_appender<char>)
+            |          |          
+            |          |--5.08%--fmt::v12::detail::format_handler<char>::on_text(char const*, char const*) (inlined)
+            |          |          void fmt::v12::detail::parse_format_string<char, fmt::v12::detail::format_handler<char> >(fmt::v12::basic_string_view<char>, fmt::v12::detail::format_handler<char>&&)
+            |          |          fmt::v12::detail::vformat_to(fmt::v12::detail::buffer<char>&, fmt::v12::basic_string_view<char>, fmt::v12::basic_format_args<fmt::v12::context>, fmt::v12::locale_ref)
+            |          |          fmt::v12::vformat[abi:cxx11](fmt::v12::basic_string_view<char>, fmt::v12::basic_format_args<fmt::v12::context>)
+            |          |          |          
+            |          |          |--3.91%--std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > fmt::v12::format<char const (&) [4], int&>(fmt::v12::fstring<char const (&) [4], int&>::t, char const (&) [4], int&) (inlined)
+            |          |          |          main
+            |          |          |          __libc_start_call_main
+            |          |          |          __libc_start_main_impl (inlined)
+            |          |          |          _start
+            |          |          |          
+            |          |           --0.78%--std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > fmt::v12::format<int&>(fmt::v12::fstring<int&>::t, int&) (inlined)
+            |          |                     main
+            |          |                     __libc_start_call_main
+            |          |                     __libc_start_main_impl (inlined)
+            |          |                     _start
+            |          |          
+            |           --1.91%--fmt::v12::basic_appender<char> fmt::v12::detail::write_significand<fmt::v12::basic_appender<char>, char>(fmt::v12::basic_appender<char>, char const*, int, int, char) (inlined)
+            |                     fmt::v12::basic_appender<char> fmt::v12::detail::write_significand<fmt::v12::basic_appender<char>, char, char const*, fmt::v12::detail::digit_grouping<char> >(fmt::v12::basic_appender<char>, char const*, int, int, char, fmt::v12::detail::digit_grouping<char> const&) (inlined)
+            |                     fmt::v12::detail::write_fixed<char, fmt::v12::detail::digit_grouping<char>, fmt::v12::basic_appender<char>, fmt::v12::detail::big_decimal_fp>(fmt::v12::basic_appender<char>, fmt::v12::detail::big_decimal_fp const&, int, char, fmt::v12::format_specs const&, fmt::v12::sign, fmt::v12::locale_ref)::{lambda(fmt::v12::basic_appender<char>)#2}::operator()(fmt::v12::basic_appender<char>) const (inlined)
+            |                     fmt::v12::basic_appender<char> fmt::v12::detail::write_padded<char, (fmt::v12::align)2, fmt::v12::basic_appender<char>, fmt::v12::detail::write_fixed<char, fmt::v12::detail::digit_grouping<char>, fmt::v12::basic_appender<char>, fmt::v12::detail::big_decimal_fp>(fmt::v12::basic_appender<char>, fmt::v12::detail::big_decimal_fp const&, int, char, fmt::v12::format_specs const&, fmt::v12::sign, fmt::v12::locale_ref)::{lambda(fmt::v12::basic_appender<char>)#2}&>(fmt::v12::basic_appender<char>, fmt::v12::format_specs const&, unsigned long, unsigned long, fmt::v12::detail::write_fixed<char, fmt::v12::detail::digit_grouping<char>, fmt::v12::basic_appender<char>, fmt::v12::detail::big_decimal_fp>(fmt::v12::basic_appender<char>, fmt::v12::detail::big_decimal_fp const&, int, char, fmt::v12::format_specs const&, fmt::v12::sign, fmt::v12::locale_ref)::{lambda(fmt::v12::basic_appender<char>)#2}&) (inlined)
+            |                     fmt::v12::basic_appender<char> fmt::v12::detail::write_padded<char, (fmt::v12::align)2, fmt::v12::basic_appender<char>, fmt::v12::detail::write_fixed<char, fmt::v12::detail::digit_grouping<char>, fmt::v12::basic_appender<char>, fmt::v12::detail::big_decimal_fp>(fmt::v12::basic_appender<char>, fmt::v12::detail::big_decimal_fp const&, int, char, fmt::v12::format_specs const&, fmt::v12::sign, fmt::v12::locale_ref)::{lambda(fmt::v12::basic_appender<char>)#2}>(fmt::v12::basic_appender<char>, fmt::v12::format_specs const&, unsigned long, fmt::v12::detail::write_fixed<char, fmt::v12::detail::digit_grouping<char>, fmt::v12::basic_appender<char>, fmt::v12::detail::big_decimal_fp>(fmt::v12::basic_appender<char>, fmt::v12::detail::big_decimal_fp const&, int, char, fmt::v12::format_specs const&, fmt::v12::sign, fmt::v12::locale_ref)::{lambda(fmt::v12::basic_appender<char>)#2}&&) (inlined)
+            |                     fmt::v12::basic_appender<char> fmt::v12::detail::write_fixed<char, fmt::v12::detail::digit_grouping<char>, fmt::v12::basic_appender<char>, fmt::v12::detail::big_decimal_fp>(fmt::v12::basic_appender<char>, fmt::v12::detail::big_decimal_fp const&, int, char, fmt::v12::format_specs const&, fmt::v12::sign, fmt::v12::locale_ref)
+            |                     fmt::v12::basic_appender<char> fmt::v12::detail::do_write_float<char, fmt::v12::detail::digit_grouping<char>, fmt::v12::basic_appender<char>, fmt::v12::detail::big_decimal_fp>(fmt::v12::basic_appender<char>, fmt::v12::detail::big_decimal_fp const&, fmt::v12::format_specs const&, fmt::v12::sign, int, fmt::v12::locale_ref)
+            |                     fmt::v12::basic_appender<char> fmt::v12::detail::write_float<char, fmt::v12::basic_appender<char>, fmt::v12::detail::big_decimal_fp>(fmt::v12::basic_appender<char>, fmt::v12::detail::big_decimal_fp const&, fmt::v12::format_specs const&, fmt::v12::sign, int, fmt::v12::locale_ref) (inlined)
+            |                     fmt::v12::basic_appender<char> fmt::v12::detail::write<char, fmt::v12::basic_appender<char>, double, 0>(fmt::v12::basic_appender<char>, double, fmt::v12::format_specs, fmt::v12::locale_ref) (inlined)
+            |                     void fmt::v12::detail::arg_formatter<char>::operator()<double, 0>(double) (inlined)
+            |                     decltype ({parm#1}(0)) fmt::v12::basic_format_arg<fmt::v12::context>::visit<fmt::v12::detail::arg_formatter<char> >(fmt::v12::detail::arg_formatter<char>&&) const (inlined)
+            |                     fmt::v12::detail::format_handler<char>::on_format_specs(int, char const*, char const*)
+            |                     char const* fmt::v12::detail::parse_replacement_field<char, fmt::v12::detail::format_handler<char>&>(char const*, char const*, fmt::v12::detail::format_handler<char>&) (inlined)
+            |                     void fmt::v12::detail::parse_format_string<char, fmt::v12::detail::format_handler<char> >(fmt::v12::basic_string_view<char>, fmt::v12::detail::format_handler<char>&&)
+            |                     fmt::v12::detail::vformat_to(fmt::v12::detail::buffer<char>&, fmt::v12::basic_string_view<char>, fmt::v12::basic_format_args<fmt::v12::context>, fmt::v12::locale_ref)
+            |                     fmt::v12::vformat[abi:cxx11](fmt::v12::basic_string_view<char>, fmt::v12::basic_format_args<fmt::v12::context>)
+            |                     std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > fmt::v12::format<double>(fmt::v12::fstring<double>::t, double&&) (inlined)
+            |                     main
+            |                     __libc_start_call_main
+            |                     __libc_start_main_impl (inlined)
+            |                     _start
+            |          
+             --2.39%--fmt::v12::basic_appender<char> fmt::v12::detail::copy_noinline<char, char const*, fmt::v12::basic_appender<char> >(char const*, char const*, fmt::v12::basic_appender<char>)
+                       |          
+                        --1.55%--fmt::v12::detail::format_handler<char>::on_text(char const*, char const*) (inlined)
+                                  void fmt::v12::detail::parse_format_string<char, fmt::v12::detail::format_handler<char> >(fmt::v12::basic_string_view<char>, fmt::v12::detail::format_handler<char>&&)
+                                  fmt::v12::detail::vformat_to(fmt::v12::detail::buffer<char>&, fmt::v12::basic_string_view<char>, fmt::v12::basic_format_args<fmt::v12::context>, fmt::v12::locale_ref)
+                                  fmt::v12::vformat[abi:cxx11](fmt::v12::basic_string_view<char>, fmt::v12::basic_format_args<fmt::v12::context>)
+                                  |          
+                                   --1.23%--std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > fmt::v12::format<char const (&) [4], int&>(fmt::v12::fstring<char const (&) [4], int&>::t, char const (&) [4], int&) (inlined)
+                                             main
+                                             __libc_start_call_main
+                                             __libc_start_main_impl (inlined)
+                                             _start
+
+     9.28%  [.] void fmt::v12::detail::parse_format_string<char, fmt::v12::detail::format_handler<char> >(fmt::v12::basic_string_view<char>, fmt::v12::detail::format_handler<char>&&)                                                                                                                                                                 -      -            
+            |          
+            |--3.70%--void fmt::v12::detail::parse_format_string<char, fmt::v12::detail::format_handler<char> >(fmt::v12::basic_string_view<char>, fmt::v12::detail::format_handler<char>&&)
+            |          fmt::v12::detail::vformat_to(fmt::v12::detail::buffer<char>&, fmt::v12::basic_string_view<char>, fmt::v12::basic_format_args<fmt::v12::context>, fmt::v12::locale_ref)
+            |          fmt::v12::vformat[abi:cxx11](fmt::v12::basic_string_view<char>, fmt::v12::basic_format_args<fmt::v12::context>)
+            |          |          
+            |          |--2.03%--std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > fmt::v12::format<double>(fmt::v12::fstring<double>::t, double&&) (inlined)
+            |          |          main
+            |          |          __libc_start_call_main
+            |          |          __libc_start_main_impl (inlined)
+            |          |          _start
+            |          |          
+            |           --1.33%--std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > fmt::v12::format<char const (&) [4], int&>(fmt::v12::fstring<char const (&) [4], int&>::t, char const (&) [4], int&) (inlined)
+            |                     main
+            |                     __libc_start_call_main
+            |                     __libc_start_main_impl (inlined)
+            |                     _start
+            |          
+            |--1.57%--decltype ({parm#1}(0)) fmt::v12::basic_format_arg<fmt::v12::context>::visit<fmt::v12::detail::default_arg_formatter<char> >(fmt::v12::detail::default_arg_formatter<char>&&) const (inlined)
+            |          fmt::v12::detail::format_handler<char>::on_replacement_field(int, char const*) (inlined)
+            |          char const* fmt::v12::detail::parse_replacement_field<char, fmt::v12::detail::format_handler<char>&>(char const*, char const*, fmt::v12::detail::format_handler<char>&) (inlined)
+            |          void fmt::v12::detail::parse_format_string<char, fmt::v12::detail::format_handler<char> >(fmt::v12::basic_string_view<char>, fmt::v12::detail::format_handler<char>&&)
+            |          fmt::v12::detail::vformat_to(fmt::v12::detail::buffer<char>&, fmt::v12::basic_string_view<char>, fmt::v12::basic_format_args<fmt::v12::context>, fmt::v12::locale_ref)
+            |          fmt::v12::vformat[abi:cxx11](fmt::v12::basic_string_view<char>, fmt::v12::basic_format_args<fmt::v12::context>)
+            |          std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > fmt::v12::format<char const (&) [4], int&>(fmt::v12::fstring<char const (&) [4], int&>::t, char const (&) [4], int&) (inlined)
+            |          main
+            |          __libc_start_call_main
+            |          __libc_start_main_impl (inlined)
+            |          _start
+            |          
+            |--1.27%--fmt::v12::detail::do_count_digits(unsigned int) (inlined)
+            |          fmt::v12::detail::count_digits(unsigned int) (inlined)
+            |          fmt::v12::basic_appender<char> fmt::v12::detail::write<char, fmt::v12::basic_appender<char>, int, 0>(fmt::v12::basic_appender<char>, int) (inlined)
+            |          void fmt::v12::detail::default_arg_formatter<char>::operator()<int, 0>(int) (inlined)
+            |          decltype ({parm#1}(0)) fmt::v12::basic_format_arg<fmt::v12::context>::visit<fmt::v12::detail::default_arg_formatter<char> >(fmt::v12::detail::default_arg_formatter<char>&&) const (inlined)
+            |          fmt::v12::detail::format_handler<char>::on_replacement_field(int, char const*) (inlined)
+            |          char const* fmt::v12::detail::parse_replacement_field<char, fmt::v12::detail::format_handler<char>&>(char const*, char const*, fmt::v12::detail::format_handler<char>&) (inlined)
+            |          void fmt::v12::detail::parse_format_string<char, fmt::v12::detail::format_handler<char> >(fmt::v12::basic_string_view<char>, fmt::v12::detail::format_handler<char>&&)
+            |          fmt::v12::detail::vformat_to(fmt::v12::detail::buffer<char>&, fmt::v12::basic_string_view<char>, fmt::v12::basic_format_args<fmt::v12::context>, fmt::v12::locale_ref)
+            |          fmt::v12::vformat[abi:cxx11](fmt::v12::basic_string_view<char>, fmt::v12::basic_format_args<fmt::v12::context>)
+            |          std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > fmt::v12::format<char const (&) [4], int&>(fmt::v12::fstring<char const (&) [4], int&>::t, char const (&) [4], int&) (inlined)
+            |          main
+            |          __libc_start_call_main
+            |          __libc_start_main_impl (inlined)
+            |          _start
+            |          
+            |--0.78%--fmt::v12::basic_appender<char> fmt::v12::detail::write<char, fmt::v12::basic_appender<char>, int, 0>(fmt::v12::basic_appender<char>, int) (inlined)
+            |          void fmt::v12::detail::default_arg_formatter<char>::operator()<int, 0>(int) (inlined)
+            |          decltype ({parm#1}(0)) fmt::v12::basic_format_arg<fmt::v12::context>::visit<fmt::v12::detail::default_arg_formatter<char> >(fmt::v12::detail::default_arg_formatter<char>&&) const (inlined)
+            |          fmt::v12::detail::format_handler<char>::on_replacement_field(int, char const*) (inlined)
+            |          char const* fmt::v12::detail::parse_replacement_field<char, fmt::v12::detail::format_handler<char>&>(char const*, char const*, fmt::v12::detail::format_handler<char>&) (inlined)
+            |          void fmt::v12::detail::parse_format_string<char, fmt::v12::detail::format_handler<char> >(fmt::v12::basic_string_view<char>, fmt::v12::detail::format_handler<char>&&)
+            |          fmt::v12::detail::vformat_to(fmt::v12::detail::buffer<char>&, fmt::v12::basic_string_view<char>, fmt::v12::basic_format_args<fmt::v12::context>, fmt::v12::locale_ref)
+            |          fmt::v12::vformat[abi:cxx11](fmt::v12::basic_string_view<char>, fmt::v12::basic_format_args<fmt::v12::context>)
+            |          std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > fmt::v12::format<char const (&) [4], int&>(fmt::v12::fstring<char const (&) [4], int&>::t, char const (&) [4], int&) (inlined)
+            |          main
+            |          __libc_start_call_main
+            |          __libc_start_main_impl (inlined)
+            |          _start
+            |          
+             --0.76%--char const* fmt::v12::detail::parse_replacement_field<char, fmt::v12::detail::format_handler<char>&>(char const*, char const*, fmt::v12::detail::format_handler<char>&) (inlined)
+                       void fmt::v12::detail::parse_format_string<char, fmt::v12::detail::format_handler<char> >(fmt::v12::basic_string_view<char>, fmt::v12::detail::format_handler<char>&&)
+                       fmt::v12::detail::vformat_to(fmt::v12::detail::buffer<char>&, fmt::v12::basic_string_view<char>, fmt::v12::basic_format_args<fmt::v12::context>, fmt::v12::locale_ref)
+                       fmt::v12::vformat[abi:cxx11](fmt::v12::basic_string_view<char>, fmt::v12::basic_format_args<fmt::v12::context>)
+
+     8.40%  [.] __memmove_avx512_unaligned_erms                                                                                                                                                                                                                                                                                                        -      -            
+            |
+            ---std::char_traits<char>::copy(char*, char const*, unsigned long) (inlined)
+               std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >::_S_copy(char*, char const*, unsigned long) (inlined)
+               std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >::_S_copy(char*, char const*, unsigned long) (inlined)
+               std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >::_S_copy_chars(char*, char const*, char const*) (inlined)
+               void std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >::_M_construct<char const*>(char const*, char const*, std::forward_iterator_tag) (inlined)
+               std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >::basic_string(char const*, unsigned long, std::allocator<char> const&) (inlined)
+               std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > fmt::v12::to_string<500ul>(fmt::v12::basic_memory_buffer<char, 500ul, fmt::v12::detail::allocator<char> > const&) (inlined)
+               fmt::v12::vformat[abi:cxx11](fmt::v12::basic_string_view<char>, fmt::v12::basic_format_args<fmt::v12::context>)
+               |          
+               |--4.54%--std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > fmt::v12::format<char const (&) [4], int&>(fmt::v12::fstring<char const (&) [4], int&>::t, char const (&) [4], int&) (inlined)
+               |          main
+               |          __libc_start_call_main
+               |          __libc_start_main_impl (inlined)
+               |          _start
+               |          
+               |--2.64%--std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > fmt::v12::format<int&>(fmt::v12::fstring<int&>::t, int&) (inlined)
+               |          main
+               |          __libc_start_call_main
+               |          __libc_start_main_impl (inlined)
+               |          _start
+               |          
+                --1.22%--std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > fmt::v12::format<double>(fmt::v12::fstring<double>::t, double&&) (inlined)
+                          main
+                          __libc_start_call_main
+                          __libc_start_main_impl (inlined)
+                          _start
+
+     7.81%  [.] char const* fmt::v12::detail::parse_format_specs<char>(char const*, char const*, fmt::v12::detail::dynamic_format_specs<char>&, fmt::v12::parse_context<char>&, fmt::v12::detail::type)                                                                                                                                                -      -            
+            |          
+            |--5.71%--char const* fmt::v12::detail::parse_format_specs<char>(char const*, char const*, fmt::v12::detail::dynamic_format_specs<char>&, fmt::v12::parse_context<char>&, fmt::v12::detail::type)
+            |          fmt::v12::detail::format_handler<char>::on_format_specs(int, char const*, char const*)
+            |          char const* fmt::v12::detail::parse_replacement_field<char, fmt::v12::detail::format_handler<char>&>(char const*, char const*, fmt::v12::detail::format_handler<char>&) (inlined)
+            |          void fmt::v12::detail::parse_format_string<char, fmt::v12::detail::format_handler<char> >(fmt::v12::basic_string_view<char>, fmt::v12::detail::format_handler<char>&&)
+            |          fmt::v12::detail::vformat_to(fmt::v12::detail::buffer<char>&, fmt::v12::basic_string_view<char>, fmt::v12::basic_format_args<fmt::v12::context>, fmt::v12::locale_ref)
+            |          fmt::v12::vformat[abi:cxx11](fmt::v12::basic_string_view<char>, fmt::v12::basic_format_args<fmt::v12::context>)
+            |          |          
+            |          |--2.89%--std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > fmt::v12::format<char const (&) [4], int&>(fmt::v12::fstring<char const (&) [4], int&>::t, char const (&) [4], int&) (inlined)
+            |          |          main
+            |          |          __libc_start_call_main
+            |          |          __libc_start_main_impl (inlined)
+            |          |          _start
+            |          |          
+            |          |--2.01%--std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > fmt::v12::format<int&>(fmt::v12::fstring<int&>::t, int&) (inlined)
+            |          |          main
+            |          |          __libc_start_call_main
+            |          |          __libc_start_main_impl (inlined)
+            |          |          _start
+            |          |          
+            |           --0.81%--std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > fmt::v12::format<double>(fmt::v12::fstring<double>::t, double&&) (inlined)
+            |                     main
+            |                     __libc_start_call_main
+            |                     __libc_start_main_impl (inlined)
+            |                     _start
+            |          
+             --0.84%--fmt::v12::detail::parse_format_specs<char>(char const*, char const*, fmt::v12::detail::dynamic_format_specs<char>&, fmt::v12::parse_context<char>&, fmt::v12::detail::type)::{unnamed type#1}::operator()(fmt::v12::detail::state, bool) (inlined)
+                       char const* fmt::v12::detail::parse_format_specs<char>(char const*, char const*, fmt::v12::detail::dynamic_format_specs<char>&, fmt::v12::parse_context<char>&, fmt::v12::detail::type)
+                       fmt::v12::detail::format_handler<char>::on_format_specs(int, char const*, char const*)
+                       char const* fmt::v12::detail::parse_replacement_field<char, fmt::v12::detail::format_handler<char>&>(char const*, char const*, fmt::v12::detail::format_handler<char>&) (inlined)
+                       void fmt::v12::detail::parse_format_string<char, fmt::v12::detail::format_handler<char> >(fmt::v12::basic_string_view<char>, fmt::v12::detail::format_handler<char>&&)
+                       fmt::v12::detail::vformat_to(fmt::v12::detail::buffer<char>&, fmt::v12::basic_string_view<char>, fmt::v12::basic_format_args<fmt::v12::context>, fmt::v12::locale_ref)
+                       fmt::v12::vformat[abi:cxx11](fmt::v12::basic_string_view<char>, fmt::v12::basic_format_args<fmt::v12::context>)
+                       |          
+                        --0.53%--std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > fmt::v12::format<char const (&) [4], int&>(fmt::v12::fstring<char const (&) [4], int&>::t, char const (&) [4], int&) (inlined)
+                                  main
+                                  __libc_start_call_main
+                                  __libc_start_main_impl (inlined)
+                                  _start
+
+     7.30%  [.] fmt::v12::basic_appender<char> fmt::v12::detail::write<char, fmt::v12::basic_appender<char>, 0>(fmt::v12::basic_appender<char>, fmt::v12::basic_string_view<char>, fmt::v12::format_specs const&)                                                                                                                                      -      -            
+            |          
+            |--4.92%--fmt::v12::detail::utf8_decode(char const*, unsigned int*, int*) (inlined)
+            |          fmt::v12::detail::for_each_codepoint<fmt::v12::detail::write<char, fmt::v12::basic_appender<char>, 0>(fmt::v12::basic_appender<char>, fmt::v12::basic_string_view<char>, fmt::v12::format_specs const&)::{lambda(unsigned int, fmt::v12::basic_string_view<char>)#1}>(fmt::v12::basic_string_view<char>, fmt::v12::detail::write<char, fmt::v12::basic_appender<char>, 0>(fmt::v12::basic_appender<char>, fmt::v12::basic_string_view<char>, fmt::v12::format_specs const&)::{lambda(unsigned int, fmt::v12::basic_string_view<char>)#1})::{lambda(char const*, char const*)#1}::operator()(char const*, char const*) const (inlined)
+            |          void fmt::v12::detail::for_each_codepoint<fmt::v12::detail::write<char, fmt::v12::basic_appender<char>, 0>(fmt::v12::basic_appender<char>, fmt::v12::basic_string_view<char>, fmt::v12::format_specs const&)::{lambda(unsigned int, fmt::v12::basic_string_view<char>)#1}>(fmt::v12::basic_string_view<char>, fmt::v12::detail::write<char, fmt::v12::basic_appender<char>, 0>(fmt::v12::basic_appender<char>, fmt::v12::basic_string_view<char>, fmt::v12::format_specs const&)::{lambda(unsigned int, fmt::v12::basic_string_view<char>)#1}) (inlined)
+            |          fmt::v12::basic_appender<char> fmt::v12::detail::write<char, fmt::v12::basic_appender<char>, 0>(fmt::v12::basic_appender<char>, fmt::v12::basic_string_view<char>, fmt::v12::format_specs const&)
+            |          fmt::v12::basic_appender<char> fmt::v12::detail::write<char, fmt::v12::basic_appender<char> >(fmt::v12::basic_appender<char>, fmt::v12::basic_string_view<char>, fmt::v12::format_specs const&, fmt::v12::locale_ref) (inlined)
+            |          fmt::v12::basic_appender<char> fmt::v12::detail::write<char, fmt::v12::basic_appender<char> >(fmt::v12::basic_appender<char>, char const*, fmt::v12::format_specs const&, fmt::v12::locale_ref) (inlined)
+            |          void fmt::v12::detail::arg_formatter<char>::operator()<char const*, 0>(char const*) (inlined)
+            |          decltype ({parm#1}(0)) fmt::v12::basic_format_arg<fmt::v12::context>::visit<fmt::v12::detail::arg_formatter<char> >(fmt::v12::detail::arg_formatter<char>&&) const (inlined)
+            |          fmt::v12::detail::format_handler<char>::on_format_specs(int, char const*, char const*)
+            |          char const* fmt::v12::detail::parse_replacement_field<char, fmt::v12::detail::format_handler<char>&>(char const*, char const*, fmt::v12::detail::format_handler<char>&) (inlined)
+            |          void fmt::v12::detail::parse_format_string<char, fmt::v12::detail::format_handler<char> >(fmt::v12::basic_string_view<char>, fmt::v12::detail::format_handler<char>&&)
+            |          fmt::v12::detail::vformat_to(fmt::v12::detail::buffer<char>&, fmt::v12::basic_string_view<char>, fmt::v12::basic_format_args<fmt::v12::context>, fmt::v12::locale_ref)
+            |          fmt::v12::vformat[abi:cxx11](fmt::v12::basic_string_view<char>, fmt::v12::basic_format_args<fmt::v12::context>)
+            |          std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > fmt::v12::format<char const (&) [4], int&>(fmt::v12::fstring<char const (&) [4], int&>::t, char const (&) [4], int&) (inlined)
+            |          main
+            |          __libc_start_call_main
+            |          __libc_start_main_impl (inlined)
+            |          _start
+            |          
+            |--1.56%--fmt::v12::detail::for_each_codepoint<fmt::v12::detail::write<char, fmt::v12::basic_appender<char>, 0>(fmt::v12::basic_appender<char>, fmt::v12::basic_string_view<char>, fmt::v12::format_specs const&)::{lambda(unsigned int, fmt::v12::basic_string_view<char>)#1}>(fmt::v12::basic_string_view<char>, fmt::v12::detail::write<char, fmt::v12::basic_appender<char>, 0>(fmt::v12::basic_appender<char>, fmt::v12::basic_string_view<char>, fmt::v12::format_specs const&)::{lambda(unsigned int, fmt::v12::basic_string_view<char>)#1})::{lambda(char const*, char const*)#1}::operator()(char const*, char const*) const (inlined)
+            |          void fmt::v12::detail::for_each_codepoint<fmt::v12::detail::write<char, fmt::v12::basic_appender<char>, 0>(fmt::v12::basic_appender<char>, fmt::v12::basic_string_view<char>, fmt::v12::format_specs const&)::{lambda(unsigned int, fmt::v12::basic_string_view<char>)#1}>(fmt::v12::basic_string_view<char>, fmt::v12::detail::write<char, fmt::v12::basic_appender<char>, 0>(fmt::v12::basic_appender<char>, fmt::v12::basic_string_view<char>, fmt::v12::format_specs const&)::{lambda(unsigned int, fmt::v12::basic_string_view<char>)#1}) (inlined)
+            |          fmt::v12::basic_appender<char> fmt::v12::detail::write<char, fmt::v12::basic_appender<char>, 0>(fmt::v12::basic_appender<char>, fmt::v12::basic_string_view<char>, fmt::v12::format_specs const&)
+            |          fmt::v12::basic_appender<char> fmt::v12::detail::write<char, fmt::v12::basic_appender<char> >(fmt::v12::basic_appender<char>, fmt::v12::basic_string_view<char>, fmt::v12::format_specs const&, fmt::v12::locale_ref) (inlined)
+            |          fmt::v12::basic_appender<char> fmt::v12::detail::write<char, fmt::v12::basic_appender<char> >(fmt::v12::basic_appender<char>, char const*, fmt::v12::format_specs const&, fmt::v12::locale_ref) (inlined)
+            |          void fmt::v12::detail::arg_formatter<char>::operator()<char const*, 0>(char const*) (inlined)
+            |          decltype ({parm#1}(0)) fmt::v12::basic_format_arg<fmt::v12::context>::visit<fmt::v12::detail::arg_formatter<char> >(fmt::v12::detail::arg_formatter<char>&&) const (inlined)
+            |          fmt::v12::detail::format_handler<char>::on_format_specs(int, char const*, char const*)
+            |          char const* fmt::v12::detail::parse_replacement_field<char, fmt::v12::detail::format_handler<char>&>(char const*, char const*, fmt::v12::detail::format_handler<char>&) (inlined)
+            |          void fmt::v12::detail::parse_format_string<char, fmt::v12::detail::format_handler<char> >(fmt::v12::basic_string_view<char>, fmt::v12::detail::format_handler<char>&&)
+            |          fmt::v12::detail::vformat_to(fmt::v12::detail::buffer<char>&, fmt::v12::basic_string_view<char>, fmt::v12::basic_format_args<fmt::v12::context>, fmt::v12::locale_ref)
+            |          fmt::v12::vformat[abi:cxx11](fmt::v12::basic_string_view<char>, fmt::v12::basic_format_args<fmt::v12::context>)
+            |          std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > fmt::v12::format<char const (&) [4], int&>(fmt::v12::fstring<char const (&) [4], int&>::t, char const (&) [4], int&) (inlined)
+            |          main
+            |          __libc_start_call_main
+            |          __libc_start_main_impl (inlined)
+            |          _start
+            |          
+             --0.50%--fmt::v12::basic_appender<char> fmt::v12::detail::write<char, fmt::v12::basic_appender<char>, 0>(fmt::v12::basic_appender<char>, fmt::v12::basic_string_view<char>, fmt::v12::format_specs const&)
+                       fmt::v12::basic_appender<char> fmt::v12::detail::write<char, fmt::v12::basic_appender<char> >(fmt::v12::basic_appender<char>, fmt::v12::basic_string_view<char>, fmt::v12::format_specs const&, fmt::v12::locale_ref) (inlined)
+                       fmt::v12::basic_appender<char> fmt::v12::detail::write<char, fmt::v12::basic_appender<char> >(fmt::v12::basic_appender<char>, char const*, fmt::v12::format_specs const&, fmt::v12::locale_ref) (inlined)
+                       void fmt::v12::detail::arg_formatter<char>::operator()<char const*, 0>(char const*) (inlined)
+                       decltype ({parm#1}(0)) fmt::v12::basic_format_arg<fmt::v12::context>::visit<fmt::v12::detail::arg_formatter<char> >(fmt::v12::detail::arg_formatter<char>&&) const (inlined)
+                       fmt::v12::detail::format_handler<char>::on_format_specs(int, char const*, char const*)
+                       char const* fmt::v12::detail::parse_replacement_field<char, fmt::v12::detail::format_handler<char>&>(char const*, char const*, fmt::v12::detail::format_handler<char>&) (inlined)
+                       void fmt::v12::detail::parse_format_string<char, fmt::v12::detail::format_handler<char> >(fmt::v12::basic_string_view<char>, fmt::v12::detail::format_handler<char>&&)
+                       fmt::v12::detail::vformat_to(fmt::v12::detail::buffer<char>&, fmt::v12::basic_string_view<char>, fmt::v12::basic_format_args<fmt::v12::context>, fmt::v12::locale_ref)
+                       fmt::v12::vformat[abi:cxx11](fmt::v12::basic_string_view<char>, fmt::v12::basic_format_args<fmt::v12::context>)
+                       std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > fmt::v12::format<char const (&) [4], int&>(fmt::v12::fstring<char const (&) [4], int&>::t, char const (&) [4], int&) (inlined)
+                       main
+                       __libc_start_call_main
+                       __libc_start_main_impl (inlined)
+                       _start
+
+     5.55%  [.] fmt::v12::vformat[abi:cxx11](fmt::v12::basic_string_view<char>, fmt::v12::basic_format_args<fmt::v12::context>)                                                                                                                                                                                                                        -      -            
+            |          
+            |--2.73%--fmt::v12::vformat[abi:cxx11](fmt::v12::basic_string_view<char>, fmt::v12::basic_format_args<fmt::v12::context>)
+            |          |          
+            |          |--1.26%--std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > fmt::v12::format<int&>(fmt::v12::fstring<int&>::t, int&) (inlined)
+            |          |          main
+            |          |          __libc_start_call_main
+            |          |          __libc_start_main_impl (inlined)
+            |          |          _start
+            |          |          
+            |          |--0.78%--std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > fmt::v12::format<double>(fmt::v12::fstring<double>::t, double&&) (inlined)
+            |          |          main
+            |          |          __libc_start_call_main
+            |          |          __libc_start_main_impl (inlined)
+            |          |          _start
+            |          |          
+            |           --0.69%--std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > fmt::v12::format<char const (&) [4], int&>(fmt::v12::fstring<char const (&) [4], int&>::t, char const (&) [4], int&) (inlined)
+            |                     main
+            |                     __libc_start_call_main
+            |                     __libc_start_main_impl (inlined)
+            |                     _start
+            |          
+            |--0.64%--fmt::v12::detail::buffer<char>::set(char*, unsigned long) (inlined)
+            |          fmt::v12::basic_memory_buffer<char, 500ul, fmt::v12::detail::allocator<char> >::basic_memory_buffer(fmt::v12::detail::allocator<char> const&) (inlined)
+            |          fmt::v12::vformat[abi:cxx11](fmt::v12::basic_string_view<char>, fmt::v12::basic_format_args<fmt::v12::context>)
+            |          
+             --0.52%--fmt::v12::detail::buffer<char>::data() (inlined)
+                       fmt::v12::basic_memory_buffer<char, 500ul, fmt::v12::detail::allocator<char> >::deallocate() (inlined)
+                       fmt::v12::basic_memory_buffer<char, 500ul, fmt::v12::detail::allocator<char> >::~basic_memory_buffer() (inlined)
+                       fmt::v12::vformat[abi:cxx11](fmt::v12::basic_string_view<char>, fmt::v12::basic_format_args<fmt::v12::context>)
+                       |          
+                        --0.50%--std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > fmt::v12::format<int&>(fmt::v12::fstring<int&>::t, int&) (inlined)
+                                  main
+                                  __libc_start_call_main
+                                  __libc_start_main_impl (inlined)
+                                  _start
+
+     3.99%  [.] _int_free                                                                                                                                                                                                                                                                                                                              -      -            
+            |          
+            |--3.39%--_int_free
+            |          __GI___libc_free (inlined)
+            |          std::__new_allocator<char>::deallocate(char*, unsigned long) (inlined)
+            |          std::allocator<char>::deallocate(char*, unsigned long) (inlined)
+            |          std::allocator_traits<std::allocator<char> >::deallocate(std::allocator<char>&, char*, unsigned long) (inlined)
+            |          std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >::_M_destroy(unsigned long) (inlined)
+            |          std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >::_M_dispose() (inlined)
+            |          std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >::~basic_string() (inlined)
+            |          main
+            |          __libc_start_call_main
+            |          __libc_start_main_impl (inlined)
+            |          _start
+            |          
+             --0.60%--tcache_put (inlined)
+                       _int_free
+                       __GI___libc_free (inlined)
+                       std::__new_allocator<char>::deallocate(char*, unsigned long) (inlined)
+                       std::allocator<char>::deallocate(char*, unsigned long) (inlined)
+                       std::allocator_traits<std::allocator<char> >::deallocate(std::allocator<char>&, char*, unsigned long) (inlined)
+                       std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >::_M_destroy(unsigned long) (inlined)
+                       std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >::_M_dispose() (inlined)
+                       std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >::~basic_string() (inlined)
+                       main
+                       __libc_start_call_main
+                       __libc_start_main_impl (inlined)
+                       _start
+
+     3.78%  [.] fmt::v12::basic_appender<char> fmt::v12::detail::write_fixed<char, fmt::v12::detail::digit_grouping<char>, fmt::v12::basic_appender<char>, fmt::v12::detail::big_decimal_fp>(fmt::v12::basic_appender<char>, fmt::v12::detail::big_decimal_fp const&, int, char, fmt::v12::format_specs const&, fmt::v12::sign, fmt::v12::locale_ref)  -      -            
+            |          
+             --2.61%--fmt::v12::basic_appender<char> fmt::v12::detail::write_fixed<char, fmt::v12::detail::digit_grouping<char>, fmt::v12::basic_appender<char>, fmt::v12::detail::big_decimal_fp>(fmt::v12::basic_appender<char>, fmt::v12::detail::big_decimal_fp const&, int, char, fmt::v12::format_specs const&, fmt::v12::sign, fmt::v12::locale_ref)
+                       fmt::v12::basic_appender<char> fmt::v12::detail::do_write_float<char, fmt::v12::detail::digit_grouping<char>, fmt::v12::basic_appender<char>, fmt::v12::detail::big_decimal_fp>(fmt::v12::basic_appender<char>, fmt::v12::detail::big_decimal_fp const&, fmt::v12::format_specs const&, fmt::v12::sign, int, fmt::v12::locale_ref)
+                       fmt::v12::basic_appender<char> fmt::v12::detail::write_float<char, fmt::v12::basic_appender<char>, fmt::v12::detail::big_decimal_fp>(fmt::v12::basic_appender<char>, fmt::v12::detail::big_decimal_fp const&, fmt::v12::format_specs const&, fmt::v12::sign, int, fmt::v12::locale_ref) (inlined)
+                       fmt::v12::basic_appender<char> fmt::v12::detail::write<char, fmt::v12::basic_appender<char>, double, 0>(fmt::v12::basic_appender<char>, double, fmt::v12::format_specs, fmt::v12::locale_ref) (inlined)
+                       void fmt::v12::detail::arg_formatter<char>::operator()<double, 0>(double) (inlined)
+                       decltype ({parm#1}(0)) fmt::v12::basic_format_arg<fmt::v12::context>::visit<fmt::v12::detail::arg_formatter<char> >(fmt::v12::detail::arg_formatter<char>&&) const (inlined)
+                       fmt::v12::detail::format_handler<char>::on_format_specs(int, char const*, char const*)
+                       char const* fmt::v12::detail::parse_replacement_field<char, fmt::v12::detail::format_handler<char>&>(char const*, char const*, fmt::v12::detail::format_handler<char>&) (inlined)
+                       void fmt::v12::detail::parse_format_string<char, fmt::v12::detail::format_handler<char> >(fmt::v12::basic_string_view<char>, fmt::v12::detail::format_handler<char>&&)
+                       fmt::v12::detail::vformat_to(fmt::v12::detail::buffer<char>&, fmt::v12::basic_string_view<char>, fmt::v12::basic_format_args<fmt::v12::context>, fmt::v12::locale_ref)
+                       fmt::v12::vformat[abi:cxx11](fmt::v12::basic_string_view<char>, fmt::v12::basic_format_args<fmt::v12::context>)
+                       std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > fmt::v12::format<double>(fmt::v12::fstring<double>::t, double&&) (inlined)
+                       main
+                       __libc_start_call_main
+                       __libc_start_main_impl (inlined)
+                       _start
+
+     3.52%  [.] fmt::v12::detail::buffer<char>::push_back(char const&)                                                                                                                                                                                                                                                                                 -      -            
+            |          
+            |--2.67%--fmt::v12::detail::buffer<char>::push_back(char const&)
+            |          fmt::v12::basic_appender<char>::operator=(char) (inlined)
+            |          fmt::v12::basic_appender<char> fmt::v12::detail::write_significand<fmt::v12::basic_appender<char>, char>(fmt::v12::basic_appender<char>, char const*, int, int, char) (inlined)
+            |          fmt::v12::basic_appender<char> fmt::v12::detail::write_significand<fmt::v12::basic_appender<char>, char, char const*, fmt::v12::detail::digit_grouping<char> >(fmt::v12::basic_appender<char>, char const*, int, int, char, fmt::v12::detail::digit_grouping<char> const&) (inlined)
+            |          fmt::v12::detail::write_fixed<char, fmt::v12::detail::digit_grouping<char>, fmt::v12::basic_appender<char>, fmt::v12::detail::big_decimal_fp>(fmt::v12::basic_appender<char>, fmt::v12::detail::big_decimal_fp const&, int, char, fmt::v12::format_specs const&, fmt::v12::sign, fmt::v12::locale_ref)::{lambda(fmt::v12::basic_appender<char>)#2}::operator()(fmt::v12::basic_appender<char>) const (inlined)
+            |          fmt::v12::basic_appender<char> fmt::v12::detail::write_padded<char, (fmt::v12::align)2, fmt::v12::basic_appender<char>, fmt::v12::detail::write_fixed<char, fmt::v12::detail::digit_grouping<char>, fmt::v12::basic_appender<char>, fmt::v12::detail::big_decimal_fp>(fmt::v12::basic_appender<char>, fmt::v12::detail::big_decimal_fp const&, int, char, fmt::v12::format_specs const&, fmt::v12::sign, fmt::v12::locale_ref)::{lambda(fmt::v12::basic_appender<char>)#2}&>(fmt::v12::basic_appender<char>, fmt::v12::format_specs const&, unsigned long, unsigned long, fmt::v12::detail::write_fixed<char, fmt::v12::detail::digit_grouping<char>, fmt::v12::basic_appender<char>, fmt::v12::detail::big_decimal_fp>(fmt::v12::basic_appender<char>, fmt::v12::detail::big_decimal_fp const&, int, char, fmt::v12::format_specs const&, fmt::v12::sign, fmt::v12::locale_ref)::{lambda(fmt::v12::basic_appender<char>)#2}&) (inlined)
+            |          fmt::v12::basic_appender<char> fmt::v12::detail::write_padded<char, (fmt::v12::align)2, fmt::v12::basic_appender<char>, fmt::v12::detail::write_fixed<char, fmt::v12::detail::digit_grouping<char>, fmt::v12::basic_appender<char>, fmt::v12::detail::big_decimal_fp>(fmt::v12::basic_appender<char>, fmt::v12::detail::big_decimal_fp const&, int, char, fmt::v12::format_specs const&, fmt::v12::sign, fmt::v12::locale_ref)::{lambda(fmt::v12::basic_appender<char>)#2}>(fmt::v12::basic_appender<char>, fmt::v12::format_specs const&, unsigned long, fmt::v12::detail::write_fixed<char, fmt::v12::detail::digit_grouping<char>, fmt::v12::basic_appender<char>, fmt::v12::detail::big_decimal_fp>(fmt::v12::basic_appender<char>, fmt::v12::detail::big_decimal_fp const&, int, char, fmt::v12::format_specs const&, fmt::v12::sign, fmt::v12::locale_ref)::{lambda(fmt::v12::basic_appender<char>)#2}&&) (inlined)
+            |          fmt::v12::basic_appender<char> fmt::v12::detail::write_fixed<char, fmt::v12::detail::digit_grouping<char>, fmt::v12::basic_appender<char>, fmt::v12::detail::big_decimal_fp>(fmt::v12::basic_appender<char>, fmt::v12::detail::big_decimal_fp const&, int, char, fmt::v12::format_specs const&, fmt::v12::sign, fmt::v12::locale_ref)
+            |          fmt::v12::basic_appender<char> fmt::v12::detail::do_write_float<char, fmt::v12::detail::digit_grouping<char>, fmt::v12::basic_appender<char>, fmt::v12::detail::big_decimal_fp>(fmt::v12::basic_appender<char>, fmt::v12::detail::big_decimal_fp const&, fmt::v12::format_specs const&, fmt::v12::sign, int, fmt::v12::locale_ref)
+            |          fmt::v12::basic_appender<char> fmt::v12::detail::write_float<char, fmt::v12::basic_appender<char>, fmt::v12::detail::big_decimal_fp>(fmt::v12::basic_appender<char>, fmt::v12::detail::big_decimal_fp const&, fmt::v12::format_specs const&, fmt::v12::sign, int, fmt::v12::locale_ref) (inlined)
+            |          fmt::v12::basic_appender<char> fmt::v12::detail::write<char, fmt::v12::basic_appender<char>, double, 0>(fmt::v12::basic_appender<char>, double, fmt::v12::format_specs, fmt::v12::locale_ref) (inlined)
+            |          void fmt::v12::detail::arg_formatter<char>::operator()<double, 0>(double) (inlined)
+            |          decltype ({parm#1}(0)) fmt::v12::basic_format_arg<fmt::v12::context>::visit<fmt::v12::detail::arg_formatter<char> >(fmt::v12::detail::arg_formatter<char>&&) const (inlined)
+            |          fmt::v12::detail::format_handler<char>::on_format_specs(int, char const*, char const*)
+            |          char const* fmt::v12::detail::parse_replacement_field<char, fmt::v12::detail::format_handler<char>&>(char const*, char const*, fmt::v12::detail::format_handler<char>&) (inlined)
+            |          void fmt::v12::detail::parse_format_string<char, fmt::v12::detail::format_handler<char> >(fmt::v12::basic_string_view<char>, fmt::v12::detail::format_handler<char>&&)
+            |          fmt::v12::detail::vformat_to(fmt::v12::detail::buffer<char>&, fmt::v12::basic_string_view<char>, fmt::v12::basic_format_args<fmt::v12::context>, fmt::v12::locale_ref)
+            |          fmt::v12::vformat[abi:cxx11](fmt::v12::basic_string_view<char>, fmt::v12::basic_format_args<fmt::v12::context>)
+            |          std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > fmt::v12::format<double>(fmt::v12::fstring<double>::t, double&&) (inlined)
+            |          main
+            |          __libc_start_call_main
+            |          __libc_start_main_impl (inlined)
+            |          _start
+            |          
+             --0.86%--fmt::v12::detail::buffer<char>::try_reserve(unsigned long) (inlined)
+                       fmt::v12::detail::buffer<char>::push_back(char const&)
+                       fmt::v12::basic_appender<char>::operator=(char) (inlined)
+                       fmt::v12::basic_appender<char> fmt::v12::detail::write_significand<fmt::v12::basic_appender<char>, char>(fmt::v12::basic_appender<char>, char const*, int, int, char) (inlined)
+                       fmt::v12::basic_appender<char> fmt::v12::detail::write_significand<fmt::v12::basic_appender<char>, char, char const*, fmt::v12::detail::digit_grouping<char> >(fmt::v12::basic_appender<char>, char const*, int, int, char, fmt::v12::detail::digit_grouping<char> const&) (inlined)
+                       fmt::v12::detail::write_fixed<char, fmt::v12::detail::digit_grouping<char>, fmt::v12::basic_appender<char>, fmt::v12::detail::big_decimal_fp>(fmt::v12::basic_appender<char>, fmt::v12::detail::big_decimal_fp const&, int, char, fmt::v12::format_specs const&, fmt::v12::sign, fmt::v12::locale_ref)::{lambda(fmt::v12::basic_appender<char>)#2}::operator()(fmt::v12::basic_appender<char>) const (inlined)
+                       fmt::v12::basic_appender<char> fmt::v12::detail::write_padded<char, (fmt::v12::align)2, fmt::v12::basic_appender<char>, fmt::v12::detail::write_fixed<char, fmt::v12::detail::digit_grouping<char>, fmt::v12::basic_appender<char>, fmt::v12::detail::big_decimal_fp>(fmt::v12::basic_appender<char>, fmt::v12::detail::big_decimal_fp const&, int, char, fmt::v12::format_specs const&, fmt::v12::sign, fmt::v12::locale_ref)::{lambda(fmt::v12::basic_appender<char>)#2}&>(fmt::v12::basic_appender<char>, fmt::v12::format_specs const&, unsigned long, unsigned long, fmt::v12::detail::write_fixed<char, fmt::v12::detail::digit_grouping<char>, fmt::v12::basic_appender<char>, fmt::v12::detail::big_decimal_fp>(fmt::v12::basic_appender<char>, fmt::v12::detail::big_decimal_fp const&, int, char, fmt::v12::format_specs const&, fmt::v12::sign, fmt::v12::locale_ref)::{lambda(fmt::v12::basic_appender<char>)#2}&) (inlined)
+                       fmt::v12::basic_appender<char> fmt::v12::detail::write_padded<char, (fmt::v12::align)2, fmt::v12::basic_appender<char>, fmt::v12::detail::write_fixed<char, fmt::v12::detail::digit_grouping<char>, fmt::v12::basic_appender<char>, fmt::v12::detail::big_decimal_fp>(fmt::v12::basic_appender<char>, fmt::v12::detail::big_decimal_fp const&, int, char, fmt::v12::format_specs const&, fmt::v12::sign, fmt::v12::locale_ref)::{lambda(fmt::v12::basic_appender<char>)#2}>(fmt::v12::basic_appender<char>, fmt::v12::format_specs const&, unsigned long, fmt::v12::detail::write_fixed<char, fmt::v12::detail::digit_grouping<char>, fmt::v12::basic_appender<char>, fmt::v12::detail::big_decimal_fp>(fmt::v12::basic_appender<char>, fmt::v12::detail::big_decimal_fp const&, int, char, fmt::v12::format_specs const&, fmt::v12::sign, fmt::v12::locale_ref)::{lambda(fmt::v12::basic_appender<char>)#2}&&) (inlined)
+                       fmt::v12::basic_appender<char> fmt::v12::detail::write_fixed<char, fmt::v12::detail::digit_grouping<char>, fmt::v12::basic_appender<char>, fmt::v12::detail::big_decimal_fp>(fmt::v12::basic_appender<char>, fmt::v12::detail::big_decimal_fp const&, int, char, fmt::v12::format_specs const&, fmt::v12::sign, fmt::v12::locale_ref)
+                       fmt::v12::basic_appender<char> fmt::v12::detail::do_write_float<char, fmt::v12::detail::digit_grouping<char>, fmt::v12::basic_appender<char>, fmt::v12::detail::big_decimal_fp>(fmt::v12::basic_appender<char>, fmt::v12::detail::big_decimal_fp const&, fmt::v12::format_specs const&, fmt::v12::sign, int, fmt::v12::locale_ref)
+                       fmt::v12::basic_appender<char> fmt::v12::detail::write_float<char, fmt::v12::basic_appender<char>, fmt::v12::detail::big_decimal_fp>(fmt::v12::basic_appender<char>, fmt::v12::detail::big_decimal_fp const&, fmt::v12::format_specs const&, fmt::v12::sign, int, fmt::v12::locale_ref) (inlined)
+                       fmt::v12::basic_appender<char> fmt::v12::detail::write<char, fmt::v12::basic_appender<char>, double, 0>(fmt::v12::basic_appender<char>, double, fmt::v12::format_specs, fmt::v12::locale_ref) (inlined)
+                       void fmt::v12::detail::arg_formatter<char>::operator()<double, 0>(double) (inlined)
+                       decltype ({parm#1}(0)) fmt::v12::basic_format_arg<fmt::v12::context>::visit<fmt::v12::detail::arg_formatter<char> >(fmt::v12::detail::arg_formatter<char>&&) const (inlined)
+                       fmt::v12::detail::format_handler<char>::on_format_specs(int, char const*, char const*)
+                       char const* fmt::v12::detail::parse_replacement_field<char, fmt::v12::detail::format_handler<char>&>(char const*, char const*, fmt::v12::detail::format_handler<char>&) (inlined)
+                       void fmt::v12::detail::parse_format_string<char, fmt::v12::detail::format_handler<char> >(fmt::v12::basic_string_view<char>, fmt::v12::detail::format_handler<char>&&)
+                       fmt::v12::detail::vformat_to(fmt::v12::detail::buffer<char>&, fmt::v12::basic_string_view<char>, fmt::v12::basic_format_args<fmt::v12::context>, fmt::v12::locale_ref)
+                       fmt::v12::vformat[abi:cxx11](fmt::v12::basic_string_view<char>, fmt::v12::basic_format_args<fmt::v12::context>)
+                       std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > fmt::v12::format<double>(fmt::v12::fstring<double>::t, double&&) (inlined)
+                       main
+                       __libc_start_call_main
+                       __libc_start_main_impl (inlined)
+                       _start
+
+     2.94%  [.] fmt::v12::detail::vformat_to(fmt::v12::detail::buffer<char>&, fmt::v12::basic_string_view<char>, fmt::v12::basic_format_args<fmt::v12::context>, fmt::v12::locale_ref)                                                                                                                                                                 -      -            
+            |          
+             --2.38%--fmt::v12::detail::vformat_to(fmt::v12::detail::buffer<char>&, fmt::v12::basic_string_view<char>, fmt::v12::basic_format_args<fmt::v12::context>, fmt::v12::locale_ref)
+                       fmt::v12::vformat[abi:cxx11](fmt::v12::basic_string_view<char>, fmt::v12::basic_format_args<fmt::v12::context>)
+                       |          
+                       |--1.19%--std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > fmt::v12::format<double>(fmt::v12::fstring<double>::t, double&&) (inlined)
+                       |          main
+                       |          __libc_start_call_main
+                       |          __libc_start_main_impl (inlined)
+                       |          _start
+                       |          
+                        --0.72%--std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > fmt::v12::format<int&>(fmt::v12::fstring<int&>::t, int&) (inlined)
+                                  main
+                                  __libc_start_call_main
+                                  __libc_start_main_impl (inlined)
+                                  _start
+
+     2.87%  [.] fmt::v12::detail::write<char, fmt::v12::basic_appender<char>, 0>(fmt::v12::basic_appender<char>, fmt::v12::basic_string_view<char>, fmt::v12::format_specs const&)::{lambda(unsigned int, fmt::v12::basic_string_view<char>)#1}::operator()(unsigned int, fmt::v12::basic_string_view<char>) const                                     -      -            
+            |
+            ---fmt::v12::detail::for_each_codepoint<fmt::v12::detail::write<char, fmt::v12::basic_appender<char>, 0>(fmt::v12::basic_appender<char>, fmt::v12::basic_string_view<char>, fmt::v12::format_specs const&)::{lambda(unsigned int, fmt::v12::basic_string_view<char>)#1}>(fmt::v12::basic_string_view<char>, fmt::v12::detail::write<char, fmt::v12::basic_appender<char>, 0>(fmt::v12::basic_appender<char>, fmt::v12::basic_string_view<char>, fmt::v12::format_specs const&)::{lambda(unsigned int, fmt::v12::basic_string_view<char>)#1})::{lambda(char const*, char const*)#1}::operator()(char const*, char const*) const (inlined)
+               void fmt::v12::detail::for_each_codepoint<fmt::v12::detail::write<char, fmt::v12::basic_appender<char>, 0>(fmt::v12::basic_appender<char>, fmt::v12::basic_string_view<char>, fmt::v12::format_specs const&)::{lambda(unsigned int, fmt::v12::basic_string_view<char>)#1}>(fmt::v12::basic_string_view<char>, fmt::v12::detail::write<char, fmt::v12::basic_appender<char>, 0>(fmt::v12::basic_appender<char>, fmt::v12::basic_string_view<char>, fmt::v12::format_specs const&)::{lambda(unsigned int, fmt::v12::basic_string_view<char>)#1}) (inlined)
+               fmt::v12::basic_appender<char> fmt::v12::detail::write<char, fmt::v12::basic_appender<char>, 0>(fmt::v12::basic_appender<char>, fmt::v12::basic_string_view<char>, fmt::v12::format_specs const&)
+               fmt::v12::basic_appender<char> fmt::v12::detail::write<char, fmt::v12::basic_appender<char> >(fmt::v12::basic_appender<char>, fmt::v12::basic_string_view<char>, fmt::v12::format_specs const&, fmt::v12::locale_ref) (inlined)
+               fmt::v12::basic_appender<char> fmt::v12::detail::write<char, fmt::v12::basic_appender<char> >(fmt::v12::basic_appender<char>, char const*, fmt::v12::format_specs const&, fmt::v12::locale_ref) (inlined)
+               void fmt::v12::detail::arg_formatter<char>::operator()<char const*, 0>(char const*) (inlined)
+               decltype ({parm#1}(0)) fmt::v12::basic_format_arg<fmt::v12::context>::visit<fmt::v12::detail::arg_formatter<char> >(fmt::v12::detail::arg_formatter<char>&&) const (inlined)
+               fmt::v12::detail::format_handler<char>::on_format_specs(int, char const*, char const*)
+               char const* fmt::v12::detail::parse_replacement_field<char, fmt::v12::detail::format_handler<char>&>(char const*, char const*, fmt::v12::detail::format_handler<char>&) (inlined)
+               void fmt::v12::detail::parse_format_string<char, fmt::v12::detail::format_handler<char> >(fmt::v12::basic_string_view<char>, fmt::v12::detail::format_handler<char>&&)
+               fmt::v12::detail::vformat_to(fmt::v12::detail::buffer<char>&, fmt::v12::basic_string_view<char>, fmt::v12::basic_format_args<fmt::v12::context>, fmt::v12::locale_ref)
+               fmt::v12::vformat[abi:cxx11](fmt::v12::basic_string_view<char>, fmt::v12::basic_format_args<fmt::v12::context>)
+               std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > fmt::v12::format<char const (&) [4], int&>(fmt::v12::fstring<char const (&) [4], int&>::t, char const (&) [4], int&) (inlined)
+               main
+               __libc_start_call_main
+               __libc_start_main_impl (inlined)
+               _start
+
+     2.65%  [.] int fmt::v12::detail::format_float<double>(double, int, fmt::v12::format_specs const&, bool, fmt::v12::detail::buffer<char>&)                                                                                                                                                                                                          -      -            
+            |          
+             --1.91%--int fmt::v12::detail::format_float<double>(double, int, fmt::v12::format_specs const&, bool, fmt::v12::detail::buffer<char>&)
+                       |          
+                        --1.59%--fmt::v12::basic_appender<char> fmt::v12::detail::write<char, fmt::v12::basic_appender<char>, double, 0>(fmt::v12::basic_appender<char>, double, fmt::v12::format_specs, fmt::v12::locale_ref) (inlined)
+                                  void fmt::v12::detail::arg_formatter<char>::operator()<double, 0>(double) (inlined)
+                                  decltype ({parm#1}(0)) fmt::v12::basic_format_arg<fmt::v12::context>::visit<fmt::v12::detail::arg_formatter<char> >(fmt::v12::detail::arg_formatter<char>&&) const (inlined)
+                                  fmt::v12::detail::format_handler<char>::on_format_specs(int, char const*, char const*)
+                                  char const* fmt::v12::detail::parse_replacement_field<char, fmt::v12::detail::format_handler<char>&>(char const*, char const*, fmt::v12::detail::format_handler<char>&) (inlined)
+                                  void fmt::v12::detail::parse_format_string<char, fmt::v12::detail::format_handler<char> >(fmt::v12::basic_string_view<char>, fmt::v12::detail::format_handler<char>&&)
+                                  fmt::v12::detail::vformat_to(fmt::v12::detail::buffer<char>&, fmt::v12::basic_string_view<char>, fmt::v12::basic_format_args<fmt::v12::context>, fmt::v12::locale_ref)
+                                  fmt::v12::vformat[abi:cxx11](fmt::v12::basic_string_view<char>, fmt::v12::basic_format_args<fmt::v12::context>)
+                                  std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > fmt::v12::format<double>(fmt::v12::fstring<double>::t, double&&) (inlined)
+                                  main
+                                  __libc_start_call_main
+                                  __libc_start_main_impl (inlined)
+                                  _start
+
+     2.46%  [.] fmt::v12::basic_appender<char> fmt::v12::detail::fill<char, fmt::v12::basic_appender<char> >(fmt::v12::basic_appender<char>, unsigned long, fmt::v12::basic_specs const&)                                                                                                                                                              -      -            
+            |          
+            |--1.59%--fmt::v12::basic_appender<char> fmt::v12::detail::fill_n<fmt::v12::basic_appender<char>, unsigned long, char>(fmt::v12::basic_appender<char>, unsigned long, char const&) (inlined)
+            |          fmt::v12::basic_appender<char> fmt::v12::detail::fill<char, fmt::v12::basic_appender<char> >(fmt::v12::basic_appender<char>, unsigned long, fmt::v12::basic_specs const&)
+            |          fmt::v12::basic_appender<char> fmt::v12::detail::write_padded<char, (fmt::v12::align)1, fmt::v12::basic_appender<char>, fmt::v12::detail::write<char, fmt::v12::basic_appender<char>, 0>(fmt::v12::basic_appender<char>, fmt::v12::basic_string_view<char>, fmt::v12::format_specs const&)::{lambda(fmt::v12::basic_appender<char>)#1}>(fmt::v12::basic_appender<char>, fmt::v12::format_specs const&, unsigned long, unsigned long, fmt::v12::detail::write<char, fmt::v12::basic_appender<char>, 0>(fmt::v12::basic_appender<char>, fmt::v12::basic_string_view<char>, fmt::v12::format_specs const&)::{lambda(fmt::v12::basic_appender<char>)#1}&&) (inlined)
+            |          fmt::v12::basic_appender<char> fmt::v12::detail::write<char, fmt::v12::basic_appender<char>, 0>(fmt::v12::basic_appender<char>, fmt::v12::basic_string_view<char>, fmt::v12::format_specs const&)
+            |          fmt::v12::basic_appender<char> fmt::v12::detail::write<char, fmt::v12::basic_appender<char> >(fmt::v12::basic_appender<char>, fmt::v12::basic_string_view<char>, fmt::v12::format_specs const&, fmt::v12::locale_ref) (inlined)
+            |          fmt::v12::basic_appender<char> fmt::v12::detail::write<char, fmt::v12::basic_appender<char> >(fmt::v12::basic_appender<char>, char const*, fmt::v12::format_specs const&, fmt::v12::locale_ref) (inlined)
+            |          void fmt::v12::detail::arg_formatter<char>::operator()<char const*, 0>(char const*) (inlined)
+            |          decltype ({parm#1}(0)) fmt::v12::basic_format_arg<fmt::v12::context>::visit<fmt::v12::detail::arg_formatter<char> >(fmt::v12::detail::arg_formatter<char>&&) const (inlined)
+            |          fmt::v12::detail::format_handler<char>::on_format_specs(int, char const*, char const*)
+            |          char const* fmt::v12::detail::parse_replacement_field<char, fmt::v12::detail::format_handler<char>&>(char const*, char const*, fmt::v12::detail::format_handler<char>&) (inlined)
+            |          void fmt::v12::detail::parse_format_string<char, fmt::v12::detail::format_handler<char> >(fmt::v12::basic_string_view<char>, fmt::v12::detail::format_handler<char>&&)
+            |          fmt::v12::detail::vformat_to(fmt::v12::detail::buffer<char>&, fmt::v12::basic_string_view<char>, fmt::v12::basic_format_args<fmt::v12::context>, fmt::v12::locale_ref)
+            |          fmt::v12::vformat[abi:cxx11](fmt::v12::basic_string_view<char>, fmt::v12::basic_format_args<fmt::v12::context>)
+            |          std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > fmt::v12::format<char const (&) [4], int&>(fmt::v12::fstring<char const (&) [4], int&>::t, char const (&) [4], int&) (inlined)
+            |          main
+            |          __libc_start_call_main
+            |          __libc_start_main_impl (inlined)
+            |          _start
+            |          
+             --0.51%--fmt::v12::basic_appender<char> fmt::v12::detail::fill<char, fmt::v12::basic_appender<char> >(fmt::v12::basic_appender<char>, unsigned long, fmt::v12::basic_specs const&)
+                       fmt::v12::basic_appender<char> fmt::v12::detail::write_padded<char, (fmt::v12::align)1, fmt::v12::basic_appender<char>, fmt::v12::detail::write<char, fmt::v12::basic_appender<char>, 0>(fmt::v12::basic_appender<char>, fmt::v12::basic_string_view<char>, fmt::v12::format_specs const&)::{lambda(fmt::v12::basic_appender<char>)#1}>(fmt::v12::basic_appender<char>, fmt::v12::format_specs const&, unsigned long, unsigned long, fmt::v12::detail::write<char, fmt::v12::basic_appender<char>, 0>(fmt::v12::basic_appender<char>, fmt::v12::basic_string_view<char>, fmt::v12::format_specs const&)::{lambda(fmt::v12::basic_appender<char>)#1}&&) (inlined)
+                       fmt::v12::basic_appender<char> fmt::v12::detail::write<char, fmt::v12::basic_appender<char>, 0>(fmt::v12::basic_appender<char>, fmt::v12::basic_string_view<char>, fmt::v12::format_specs const&)
+                       fmt::v12::basic_appender<char> fmt::v12::detail::write<char, fmt::v12::basic_appender<char> >(fmt::v12::basic_appender<char>, fmt::v12::basic_string_view<char>, fmt::v12::format_specs const&, fmt::v12::locale_ref) (inlined)
+                       fmt::v12::basic_appender<char> fmt::v12::detail::write<char, fmt::v12::basic_appender<char> >(fmt::v12::basic_appender<char>, char const*, fmt::v12::format_specs const&, fmt::v12::locale_ref) (inlined)
+                       void fmt::v12::detail::arg_formatter<char>::operator()<char const*, 0>(char const*) (inlined)
+                       decltype ({parm#1}(0)) fmt::v12::basic_format_arg<fmt::v12::context>::visit<fmt::v12::detail::arg_formatter<char> >(fmt::v12::detail::arg_formatter<char>&&) const (inlined)
+                       fmt::v12::detail::format_handler<char>::on_format_specs(int, char const*, char const*)
+                       char const* fmt::v12::detail::parse_replacement_field<char, fmt::v12::detail::format_handler<char>&>(char const*, char const*, fmt::v12::detail::format_handler<char>&) (inlined)
+                       void fmt::v12::detail::parse_format_string<char, fmt::v12::detail::format_handler<char> >(fmt::v12::basic_string_view<char>, fmt::v12::detail::format_handler<char>&&)
+                       fmt::v12::detail::vformat_to(fmt::v12::detail::buffer<char>&, fmt::v12::basic_string_view<char>, fmt::v12::basic_format_args<fmt::v12::context>, fmt::v12::locale_ref)
+                       fmt::v12::vformat[abi:cxx11](fmt::v12::basic_string_view<char>, fmt::v12::basic_format_args<fmt::v12::context>)
+                       std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > fmt::v12::format<char const (&) [4], int&>(fmt::v12::fstring<char const (&) [4], int&>::t, char const (&) [4], int&) (inlined)
+                       main
+                       __libc_start_call_main
+                       __libc_start_main_impl (inlined)
+                       _start
+
+     2.05%  [.] fmt::v12::detail::digit_grouping<char>::digit_grouping(fmt::v12::locale_ref, bool)                                                                                                                                                                                                                                                     -      -            
+            |          
+             --1.65%--fmt::v12::detail::digit_grouping<char>::digit_grouping(fmt::v12::locale_ref, bool)
+                       fmt::v12::basic_appender<char> fmt::v12::detail::write_fixed<char, fmt::v12::detail::digit_grouping<char>, fmt::v12::basic_appender<char>, fmt::v12::detail::big_decimal_fp>(fmt::v12::basic_appender<char>, fmt::v12::detail::big_decimal_fp const&, int, char, fmt::v12::format_specs const&, fmt::v12::sign, fmt::v12::locale_ref)
+                       fmt::v12::basic_appender<char> fmt::v12::detail::do_write_float<char, fmt::v12::detail::digit_grouping<char>, fmt::v12::basic_appender<char>, fmt::v12::detail::big_decimal_fp>(fmt::v12::basic_appender<char>, fmt::v12::detail::big_decimal_fp const&, fmt::v12::format_specs const&, fmt::v12::sign, int, fmt::v12::locale_ref)
+                       fmt::v12::basic_appender<char> fmt::v12::detail::write_float<char, fmt::v12::basic_appender<char>, fmt::v12::detail::big_decimal_fp>(fmt::v12::basic_appender<char>, fmt::v12::detail::big_decimal_fp const&, fmt::v12::format_specs const&, fmt::v12::sign, int, fmt::v12::locale_ref) (inlined)
+                       fmt::v12::basic_appender<char> fmt::v12::detail::write<char, fmt::v12::basic_appender<char>, double, 0>(fmt::v12::basic_appender<char>, double, fmt::v12::format_specs, fmt::v12::locale_ref) (inlined)
+                       void fmt::v12::detail::arg_formatter<char>::operator()<double, 0>(double) (inlined)
+                       decltype ({parm#1}(0)) fmt::v12::basic_format_arg<fmt::v12::context>::visit<fmt::v12::detail::arg_formatter<char> >(fmt::v12::detail::arg_formatter<char>&&) const (inlined)
+                       fmt::v12::detail::format_handler<char>::on_format_specs(int, char const*, char const*)
+                       char const* fmt::v12::detail::parse_replacement_field<char, fmt::v12::detail::format_handler<char>&>(char const*, char const*, fmt::v12::detail::format_handler<char>&) (inlined)
+                       void fmt::v12::detail::parse_format_string<char, fmt::v12::detail::format_handler<char> >(fmt::v12::basic_string_view<char>, fmt::v12::detail::format_handler<char>&&)
+                       fmt::v12::detail::vformat_to(fmt::v12::detail::buffer<char>&, fmt::v12::basic_string_view<char>, fmt::v12::basic_format_args<fmt::v12::context>, fmt::v12::locale_ref)
+                       fmt::v12::vformat[abi:cxx11](fmt::v12::basic_string_view<char>, fmt::v12::basic_format_args<fmt::v12::context>)
+                       std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > fmt::v12::format<double>(fmt::v12::fstring<double>::t, double&&) (inlined)
+                       main
+                       __libc_start_call_main
+                       __libc_start_main_impl (inlined)
+                       _start
+
+     2.01%  [.] main                                                                                                                                                                                                                                                                                                                                   -      -            
+            |          
+             --1.23%--main
+                       __libc_start_call_main
+                       __libc_start_main_impl (inlined)
+                       _start
+
+     1.85%  [.] void fmt::v12::detail::buffer<char>::append<char>(char const*, char const*)                                                                                                                                                                                                                                                            -      -            
+            |
+            ---fmt::v12::basic_appender<char> fmt::v12::detail::copy<char, char const*, fmt::v12::basic_appender<char>, 0>(char const*, char const*, fmt::v12::basic_appender<char>) (inlined)
+               |          
+                --1.36%--fmt::v12::detail::write_int<char, fmt::v12::basic_appender<char>, unsigned int>(fmt::v12::basic_appender<char>, fmt::v12::detail::write_int_arg<unsigned int>, fmt::v12::format_specs const&)::{lambda(fmt::v12::basic_appender<char>)#1}::operator()(fmt::v12::basic_appender<char>) const (inlined)
+                          fmt::v12::basic_appender<char> fmt::v12::detail::write_padded<char, (fmt::v12::align)2, fmt::v12::basic_appender<char>, fmt::v12::detail::write_int<char, fmt::v12::basic_appender<char>, unsigned int>(fmt::v12::basic_appender<char>, fmt::v12::detail::write_int_arg<unsigned int>, fmt::v12::format_specs const&)::{lambda(fmt::v12::basic_appender<char>)#1}&>(fmt::v12::basic_appender<char>, fmt::v12::format_specs const&, unsigned long, unsigned long, fmt::v12::detail::write_int<char, fmt::v12::basic_appender<char>, unsigned int>(fmt::v12::basic_appender<char>, fmt::v12::detail::write_int_arg<unsigned int>, fmt::v12::format_specs const&)::{lambda(fmt::v12::basic_appender<char>)#1}&) (inlined)
+                          fmt::v12::basic_appender<char> fmt::v12::detail::write_padded<char, (fmt::v12::align)2, fmt::v12::basic_appender<char>, fmt::v12::detail::write_int<char, fmt::v12::basic_appender<char>, unsigned int>(fmt::v12::basic_appender<char>, fmt::v12::detail::write_int_arg<unsigned int>, fmt::v12::format_specs const&)::{lambda(fmt::v12::basic_appender<char>)#1}>(fmt::v12::basic_appender<char>, fmt::v12::format_specs const&, unsigned long, fmt::v12::detail::write_int<char, fmt::v12::basic_appender<char>, unsigned int>(fmt::v12::basic_appender<char>, fmt::v12::detail::write_int_arg<unsigned int>, fmt::v12::format_specs const&)::{lambda(fmt::v12::basic_appender<char>)#1}&&) (inlined)
+                          fmt::v12::basic_appender<char> fmt::v12::detail::write_int<char, fmt::v12::basic_appender<char>, unsigned int>(fmt::v12::basic_appender<char>, fmt::v12::detail::write_int_arg<unsigned int>, fmt::v12::format_specs const&) (inlined)
+                          fmt::v12::basic_appender<char> fmt::v12::detail::write_int_noinline<char, fmt::v12::basic_appender<char>, unsigned int>(fmt::v12::basic_appender<char>, fmt::v12::detail::write_int_arg<unsigned int>, fmt::v12::format_specs const&)
+                          fmt::v12::basic_appender<char> fmt::v12::detail::write<char, int, 0>(fmt::v12::basic_appender<char>, int, fmt::v12::format_specs const&, fmt::v12::locale_ref) (inlined)
+                          void fmt::v12::detail::arg_formatter<char>::operator()<int, 0>(int) (inlined)
+                          decltype ({parm#1}(0)) fmt::v12::basic_format_arg<fmt::v12::context>::visit<fmt::v12::detail::arg_formatter<char> >(fmt::v12::detail::arg_formatter<char>&&) const (inlined)
+                          fmt::v12::detail::format_handler<char>::on_format_specs(int, char const*, char const*)
+                          char const* fmt::v12::detail::parse_replacement_field<char, fmt::v12::detail::format_handler<char>&>(char const*, char const*, fmt::v12::detail::format_handler<char>&) (inlined)
+                          void fmt::v12::detail::parse_format_string<char, fmt::v12::detail::format_handler<char> >(fmt::v12::basic_string_view<char>, fmt::v12::detail::format_handler<char>&&)
+                          fmt::v12::detail::vformat_to(fmt::v12::detail::buffer<char>&, fmt::v12::basic_string_view<char>, fmt::v12::basic_format_args<fmt::v12::context>, fmt::v12::locale_ref)
+                          fmt::v12::vformat[abi:cxx11](fmt::v12::basic_string_view<char>, fmt::v12::basic_format_args<fmt::v12::context>)
+                          std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > fmt::v12::format<int&>(fmt::v12::fstring<int&>::t, int&) (inlined)
+                          main
+                          __libc_start_call_main
+                          __libc_start_main_impl (inlined)
+                          _start
+
+     1.84%  [.] malloc                                                                                                                                                                                                                                                                                                                                 -      -            
+            |          
+            |--0.94%--tcache_get_n (inlined)
+            |          tcache_get (inlined)
+            |          __GI___libc_malloc (inlined)
+            |          operator new(unsigned long)
+            |          std::__new_allocator<char>::allocate(unsigned long, void const*) (inlined)
+            |          std::allocator<char>::allocate(unsigned long) (inlined)
+            |          std::allocator_traits<std::allocator<char> >::allocate(std::allocator<char>&, unsigned long) (inlined)
+            |          std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >::_S_allocate(std::allocator<char>&, unsigned long) (inlined)
+            |          std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >::_M_create(unsigned long&, unsigned long) (inlined)
+            |          void std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >::_M_construct<char const*>(char const*, char const*, std::forward_iterator_tag) (inlined)
+            |          std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >::basic_string(char const*, unsigned long, std::allocator<char> const&) (inlined)
+            |          std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > fmt::v12::to_string<500ul>(fmt::v12::basic_memory_buffer<char, 500ul, fmt::v12::detail::allocator<char> > const&) (inlined)
+            |          fmt::v12::vformat[abi:cxx11](fmt::v12::basic_string_view<char>, fmt::v12::basic_format_args<fmt::v12::context>)
+            |          |          
+            |           --0.60%--std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > fmt::v12::format<double>(fmt::v12::fstring<double>::t, double&&) (inlined)
+            |                     main
+            |                     __libc_start_call_main
+            |                     __libc_start_main_impl (inlined)
+            |                     _start
+            |          
+             --0.79%--__GI___libc_malloc (inlined)
+                       operator new(unsigned long)
+                       |          
+                        --0.69%--std::__new_allocator<char>::allocate(unsigned long, void const*) (inlined)
+                                  std::allocator<char>::allocate(unsigned long) (inlined)
+                                  std::allocator_traits<std::allocator<char> >::allocate(std::allocator<char>&, unsigned long) (inlined)
+                                  std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >::_S_allocate(std::allocator<char>&, unsigned long) (inlined)
+                                  std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >::_M_create(unsigned long&, unsigned long) (inlined)
+                                  void std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >::_M_construct<char const*>(char const*, char const*, std::forward_iterator_tag) (inlined)
+                                  std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >::basic_string(char const*, unsigned long, std::allocator<char> const&) (inlined)
+                                  std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > fmt::v12::to_string<500ul>(fmt::v12::basic_memory_buffer<char, 500ul, fmt::v12::detail::allocator<char> > const&) (inlined)
+                                  fmt::v12::vformat[abi:cxx11](fmt::v12::basic_string_view<char>, fmt::v12::basic_format_args<fmt::v12::context>)
+
+     1.53%  [.] cfree@GLIBC_2.2.5                                                                                                                                                                                                                                                                                                                      -      -            
+            |
+            ---std::__new_allocator<char>::deallocate(char*, unsigned long) (inlined)
+               std::allocator<char>::deallocate(char*, unsigned long) (inlined)
+               std::allocator_traits<std::allocator<char> >::deallocate(std::allocator<char>&, char*, unsigned long) (inlined)
+               std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >::_M_destroy(unsigned long) (inlined)
+               std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >::_M_dispose() (inlined)
+               std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >::~basic_string() (inlined)
+               main
+               __libc_start_call_main
+               __libc_start_main_impl (inlined)
+               _start
+
+     1.02%  [.] fmt::v12::detail::parse_dynamic_spec_result<char> fmt::v12::detail::parse_dynamic_spec<char>(char const*, char const*, int&, fmt::v12::detail::arg_ref<char>&, fmt::v12::parse_context<char>&)                                                                                                                                         -      -            
+            |          
+             --0.53%--int fmt::v12::detail::parse_nonnegative_int<char>(char const*&, char const*, int) (inlined)
+                       fmt::v12::detail::parse_dynamic_spec_result<char> fmt::v12::detail::parse_dynamic_spec<char>(char const*, char const*, int&, fmt::v12::detail::arg_ref<char>&, fmt::v12::parse_context<char>&)
+
+     0.84%  [.] fmt::v12::basic_appender<char> fmt::v12::detail::do_write_float<char, fmt::v12::detail::digit_grouping<char>, fmt::v12::basic_appender<char>, fmt::v12::detail::big_decimal_fp>(fmt::v12::basic_appender<char>, fmt::v12::detail::big_decimal_fp const&, fmt::v12::format_specs const&, fmt::v12::sign, int, fmt::v12::locale_ref)     -      -            
+            |          
+             --0.77%--fmt::v12::basic_appender<char> fmt::v12::detail::do_write_float<char, fmt::v12::detail::digit_grouping<char>, fmt::v12::basic_appender<char>, fmt::v12::detail::big_decimal_fp>(fmt::v12::basic_appender<char>, fmt::v12::detail::big_decimal_fp const&, fmt::v12::format_specs const&, fmt::v12::sign, int, fmt::v12::locale_ref)
+                       fmt::v12::basic_appender<char> fmt::v12::detail::write_float<char, fmt::v12::basic_appender<char>, fmt::v12::detail::big_decimal_fp>(fmt::v12::basic_appender<char>, fmt::v12::detail::big_decimal_fp const&, fmt::v12::format_specs const&, fmt::v12::sign, int, fmt::v12::locale_ref) (inlined)
+                       fmt::v12::basic_appender<char> fmt::v12::detail::write<char, fmt::v12::basic_appender<char>, double, 0>(fmt::v12::basic_appender<char>, double, fmt::v12::format_specs, fmt::v12::locale_ref) (inlined)
+                       void fmt::v12::detail::arg_formatter<char>::operator()<double, 0>(double) (inlined)
+                       decltype ({parm#1}(0)) fmt::v12::basic_format_arg<fmt::v12::context>::visit<fmt::v12::detail::arg_formatter<char> >(fmt::v12::detail::arg_formatter<char>&&) const (inlined)
+                       fmt::v12::detail::format_handler<char>::on_format_specs(int, char const*, char const*)
+                       char const* fmt::v12::detail::parse_replacement_field<char, fmt::v12::detail::format_handler<char>&>(char const*, char const*, fmt::v12::detail::format_handler<char>&) (inlined)
+                       void fmt::v12::detail::parse_format_string<char, fmt::v12::detail::format_handler<char> >(fmt::v12::basic_string_view<char>, fmt::v12::detail::format_handler<char>&&)
+                       fmt::v12::detail::vformat_to(fmt::v12::detail::buffer<char>&, fmt::v12::basic_string_view<char>, fmt::v12::basic_format_args<fmt::v12::context>, fmt::v12::locale_ref)
+                       fmt::v12::vformat[abi:cxx11](fmt::v12::basic_string_view<char>, fmt::v12::basic_format_args<fmt::v12::context>)
+                       std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > fmt::v12::format<double>(fmt::v12::fstring<double>::t, double&&) (inlined)
+                       main
+                       __libc_start_call_main
+                       __libc_start_main_impl (inlined)
+                       _start
+
+     0.69%  [.] operator delete(void*)                                                                                                                                                                                                                                                                                                                 -      -            
+            |
+            ---std::__new_allocator<char>::deallocate(char*, unsigned long) (inlined)
+               std::allocator<char>::deallocate(char*, unsigned long) (inlined)
+               std::allocator_traits<std::allocator<char> >::deallocate(std::allocator<char>&, char*, unsigned long) (inlined)
+               std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >::_M_destroy(unsigned long) (inlined)
+               std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >::_M_dispose() (inlined)
+               std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >::~basic_string() (inlined)
+               main
+               __libc_start_call_main
+               __libc_start_main_impl (inlined)
+               _start
+
+     0.68%  [.] fmt::v12::basic_format_args<fmt::v12::context>::get(int) const                                                                                                                                                                                                                                                                         -      -            
+            |          
+             --0.50%--fmt::v12::basic_format_args<fmt::v12::context>::get(int) const
+                       fmt::v12::context::arg(int) const (inlined)
+                       fmt::v12::detail::format_handler<char>::on_replacement_field(int, char const*) (inlined)
+                       char const* fmt::v12::detail::parse_replacement_field<char, fmt::v12::detail::format_handler<char>&>(char const*, char const*, fmt::v12::detail::format_handler<char>&) (inlined)
+                       void fmt::v12::detail::parse_format_string<char, fmt::v12::detail::format_handler<char> >(fmt::v12::basic_string_view<char>, fmt::v12::detail::format_handler<char>&&)
+                       fmt::v12::detail::vformat_to(fmt::v12::detail::buffer<char>&, fmt::v12::basic_string_view<char>, fmt::v12::basic_format_args<fmt::v12::context>, fmt::v12::locale_ref)
+                       fmt::v12::vformat[abi:cxx11](fmt::v12::basic_string_view<char>, fmt::v12::basic_format_args<fmt::v12::context>)
+                       std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > fmt::v12::format<char const (&) [4], int&>(fmt::v12::fstring<char const (&) [4], int&>::t, char const (&) [4], int&) (inlined)
+                       main
+                       __libc_start_call_main
+                       __libc_start_main_impl (inlined)
+                       _start
+
+     0.54%  [.] fmt::v12::basic_appender<char> fmt::v12::detail::write_int_noinline<char, fmt::v12::basic_appender<char>, unsigned int>(fmt::v12::basic_appender<char>, fmt::v12::detail::write_int_arg<unsigned int>, fmt::v12::format_specs const&)                                                                                                  -      -            
+     0.50%  [.] operator new(unsigned long)                                                                                                                                                                                                                                                                                                            -      -            
+            |
+            ---std::__new_allocator<char>::allocate(unsigned long, void const*) (inlined)
+               std::allocator<char>::allocate(unsigned long) (inlined)
+               std::allocator_traits<std::allocator<char> >::allocate(std::allocator<char>&, unsigned long) (inlined)
+               std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >::_S_allocate(std::allocator<char>&, unsigned long) (inlined)
+               std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >::_M_create(unsigned long&, unsigned long) (inlined)
+               void std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >::_M_construct<char const*>(char const*, char const*, std::forward_iterator_tag) (inlined)
+               std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >::basic_string(char const*, unsigned long, std::allocator<char> const&) (inlined)
+               std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > fmt::v12::to_string<500ul>(fmt::v12::basic_memory_buffer<char, 500ul, fmt::v12::detail::allocator<char> > const&) (inlined)
+               fmt::v12::vformat[abi:cxx11](fmt::v12::basic_string_view<char>, fmt::v12::basic_format_args<fmt::v12::context>)
+
+     0.44%  [.] char* fmt::v12::detail::to_pointer<char>(fmt::v12::basic_appender<char>, unsigned long)                                                                                                                                                                                                                                                -      -            
+     0.43%  [.] char* fmt::v12::detail::do_format_decimal<char, unsigned int>(char*, unsigned int, int)                                                                                                                                                                                                                                                -      -            
+     0.35%  [.] fmt::v12::detail::format_float<double>(double, int, fmt::v12::format_specs const&, bool, fmt::v12::detail::buffer<char>&)::{lambda(unsigned int, char*)#1}::operator()(unsigned int, char*) const                                                                                                                                      -      -            
+     0.32%  [.] fmt::v12::detail::parse_format_specs<char>(char const*, char const*, fmt::v12::detail::dynamic_format_specs<char>&, fmt::v12::parse_context<char>&, fmt::v12::detail::type)::{unnamed type#2}::operator()(fmt::v12::presentation_type, int) [clone .isra.0]                                                                            -      -            
+     0.26%  [.] operator new(unsigned long)@plt                                                                                                                                                                                                                                                                                                        -      -            
+     0.10%  [.] __strlen_evex                                                                                                                                                                                                                                                                                                                          -      -            
+     0.07%  [.] memcpy@plt                                                                                                                                                                                                                                                                                                                             -      -            
+     0.06%  [.] strlen@plt                                                                                                                                                                                                                                                                                                                             -      -            
+     0.06%  [.] std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >::_M_dispose()                                                                                                                                                                                                                                          -      -            
+     0.06%  [.] operator delete(void*, unsigned long)@plt                                                                                                                                                                                                                                                                                              -      -            
+     0.04%  [.] fmt::v12::basic_appender<char> fmt::v12::detail::reserve<char>(fmt::v12::basic_appender<char>, unsigned long)                                                                                                                                                                                                                          -      -            
+     0.01%  [.] operator delete(void*, unsigned long)                                                                                                                                                                                                                                                                                                  -      -            
+     0.01%  [.] do_lookup_x                                                                                                                                                                                                                                                                                                                            -      -            
+     0.01%  [.] _dl_lookup_symbol_x                                                                                                                                                                                                                                                                                                                    -      -            
+     0.00%  [.] _dl_relocate_object                                                                                                                                                                                                                                                                                                                    -      -            
+     0.00%  [k] 0xffffffffa5398725                                                                                                                                                                                                                                                                                                                     -      -            
+     0.00%  [.] _dl_check_map_versions                                                                                                                                                                                                                                                                                                                 -      -            
+     0.00%  [.] check_match                                                                                                                                                                                                                                                                                                                            -      -            
+     0.00%  [k] 0xffffffffa4001320                                                                                                                                                                                                                                                                                                                     -      -            
+     0.00%  [.] _dl_new_object                                                                                                                                                                                                                                                                                                                         -      -            
+     0.00%  [.] init_cpu_features.constprop.0                                                                                                                                                                                                                                                                                                          -      -            
+     0.00%  [.] __GI___tunables_init                                                                                                                                                                                                                                                                                                                   -      -            
+     0.00%  [.] _dl_start                                                                                                                                                                                                                                                                                                                              -      -            
+     0.00%  [k] 0xffffffffa539c0ef                                                                                                                                                                                                                                                                                                                     -      -            
+
+
+#
+# (Cannot load tips.txt file, please install perf!)
+#
