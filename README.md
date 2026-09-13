@@ -3,7 +3,7 @@
 ## Analiza projekta fmt
 ### Autor
 
-Dunja Mijačić
+Dunja Mijačić 1025/2025
 
 ## Analizirani projekat
 
