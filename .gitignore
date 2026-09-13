@@ -1,8 +1,6 @@
 unit_tests/build/
 unit_tests/coverage_build/
 unit_tests/coverage_report/
-fuzzing/build/
-fuzzing/artifacts/
 perf/build/
 perf/results/perf.data*
 sanitizers/build/
