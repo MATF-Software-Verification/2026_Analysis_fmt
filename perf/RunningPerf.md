@@ -96,3 +96,19 @@ To odgovara izabranom workload-u, koji u svakoj iteraciji koristi formatiranje s
 U profilu se pojavljuju i funkcije povezane sa kopiranjem podataka i radom sa rezultujućim stringovima, kao što su `memmove`, kao i funkcije za oslobađanje memorije. Ovo je očekivano jer se u svakoj iteraciji formiraju tri nova `std::string` rezultata.
 
 Detaljni `perf report` sa call graph-om korišćen je kao dopuna flat profilu, kako bi se proverilo iz kojih delova workload-a dolaze izdvojene funkcije.
+
+#### Flame graph
+
+Na osnovu postojećeg fajla `perf/results/perf.data` generisan je i flame graph:
+
+```bash
+/usr/lib/linux-tools/6.8.0-139-generic/perf script -i perf/results/perf.data | perf/FlameGraph/stackcollapse-perf.pl | perf/FlameGraph/flamegraph.pl --title "fmt format_workload CPU profile" > perf/results/perf_flamegraph.svg
+```
+
+Graf je generisan iz istog profila kao flat i detaljni `perf report`, bez ponovnog pokretanja workload-a.
+
+![Flame graph profila izvršavanja](results/perf_flamegraph.svg)
+
+Širina svakog bloka predstavlja relativni udeo prikupljenih uzoraka u funkciji, dok vertikalni raspored predstavlja odnos poziva: blok iznad je funkcija pozvana iz bloka ispod. Položaj blokova levo-desno nema vremensko značenje, a boje služe samo za lakše vizuelno razlikovanje funkcija.
+
+Graf potvrđuje da značajan deo posmatranog izvršavanja pripada parsiranju format specifikacija, obradi format stringova i formiranju rezultujućih stringova, što je u skladu sa izabranim workload-om.

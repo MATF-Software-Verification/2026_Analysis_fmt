@@ -4,3 +4,4 @@ unit_tests/coverage_report/
 perf/build/
 perf/results/perf.data*
 sanitizers/build/
+perf/FlameGraph/

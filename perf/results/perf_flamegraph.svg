@@ -1,0 +1,1618 @@
+<?xml version="1.0" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg version="1.1" width="1200" height="486" onload="init(evt)" viewBox="0 0 1200 486" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<!-- Flame graph stack visualization. See https://github.com/brendangregg/FlameGraph for latest version, and http://www.brendangregg.com/flamegraphs.html for examples. -->
+<!-- NOTES:  -->
+<defs>
+	<linearGradient id="background" y1="0" y2="1" x1="0" x2="0" >
+		<stop stop-color="#eeeeee" offset="5%" />
+		<stop stop-color="#eeeeb0" offset="95%" />
+	</linearGradient>
+</defs>
+<style type="text/css">
+	text { font-family:Verdana; font-size:12px; fill:rgb(0,0,0); }
+	#search, #ignorecase { opacity:0.1; cursor:pointer; }
+	#search:hover, #search.show, #ignorecase:hover, #ignorecase.show { opacity:1; }
+	#subtitle { text-anchor:middle; font-color:rgb(160,160,160); }
+	#title { text-anchor:middle; font-size:17px}
+	#unzoom { cursor:pointer; }
+	#frames > *:hover { stroke:black; stroke-width:0.5; cursor:pointer; }
+	.hide { display:none; }
+	.parent { opacity:0.5; }
+</style>
+<script type="text/ecmascript">
+<![CDATA[
+	"use strict";
+	var details, searchbtn, unzoombtn, matchedtxt, svg, searching, currentSearchTerm, ignorecase, ignorecaseBtn;
+	function init(evt) {
+		details = document.getElementById("details").firstChild;
+		searchbtn = document.getElementById("search");
+		ignorecaseBtn = document.getElementById("ignorecase");
+		unzoombtn = document.getElementById("unzoom");
+		matchedtxt = document.getElementById("matched");
+		svg = document.getElementsByTagName("svg")[0];
+		searching = 0;
+		currentSearchTerm = null;
+
+		// use GET parameters to restore a flamegraphs state.
+		var params = get_params();
+		if (params.x && params.y)
+			zoom(find_group(document.querySelector('[x="' + params.x + '"][y="' + params.y + '"]')));
+                if (params.s) search(params.s);
+	}
+
+	// event listeners
+	window.addEventListener("click", function(e) {
+		var target = find_group(e.target);
+		if (target) {
+			if (target.nodeName == "a") {
+				if (e.ctrlKey === false) return;
+				e.preventDefault();
+			}
+			if (target.classList.contains("parent")) unzoom(true);
+			zoom(target);
+			if (!document.querySelector('.parent')) {
+				// we have basically done a clearzoom so clear the url
+				var params = get_params();
+				if (params.x) delete params.x;
+				if (params.y) delete params.y;
+				history.replaceState(null, null, parse_params(params));
+				unzoombtn.classList.add("hide");
+				return;
+			}
+
+			// set parameters for zoom state
+			var el = target.querySelector("rect");
+			if (el && el.attributes && el.attributes.y && el.attributes._orig_x) {
+				var params = get_params()
+				params.x = el.attributes._orig_x.value;
+				params.y = el.attributes.y.value;
+				history.replaceState(null, null, parse_params(params));
+			}
+		}
+		else if (e.target.id == "unzoom") clearzoom();
+		else if (e.target.id == "search") search_prompt();
+		else if (e.target.id == "ignorecase") toggle_ignorecase();
+	}, false)
+
+	// mouse-over for info
+	// show
+	window.addEventListener("mouseover", function(e) {
+		var target = find_group(e.target);
+		if (target) details.nodeValue = "Function: " + g_to_text(target);
+	}, false)
+
+	// clear
+	window.addEventListener("mouseout", function(e) {
+		var target = find_group(e.target);
+		if (target) details.nodeValue = ' ';
+	}, false)
+
+	// ctrl-F for search
+	// ctrl-I to toggle case-sensitive search
+	window.addEventListener("keydown",function (e) {
+		if (e.keyCode === 114 || (e.ctrlKey && e.keyCode === 70)) {
+			e.preventDefault();
+			search_prompt();
+		}
+		else if (e.ctrlKey && e.keyCode === 73) {
+			e.preventDefault();
+			toggle_ignorecase();
+		}
+	}, false)
+
+	// functions
+	function get_params() {
+		var params = {};
+		var paramsarr = window.location.search.substr(1).split('&');
+		for (var i = 0; i < paramsarr.length; ++i) {
+			var tmp = paramsarr[i].split("=");
+			if (!tmp[0] || !tmp[1]) continue;
+			params[tmp[0]]  = decodeURIComponent(tmp[1]);
+		}
+		return params;
+	}
+	function parse_params(params) {
+		var uri = "?";
+		for (var key in params) {
+			uri += key + '=' + encodeURIComponent(params[key]) + '&';
+		}
+		if (uri.slice(-1) == "&")
+			uri = uri.substring(0, uri.length - 1);
+		if (uri == '?')
+			uri = window.location.href.split('?')[0];
+		return uri;
+	}
+	function find_child(node, selector) {
+		var children = node.querySelectorAll(selector);
+		if (children.length) return children[0];
+	}
+	function find_group(node) {
+		var parent = node.parentElement;
+		if (!parent) return;
+		if (parent.id == "frames") return node;
+		return find_group(parent);
+	}
+	function orig_save(e, attr, val) {
+		if (e.attributes["_orig_" + attr] != undefined) return;
+		if (e.attributes[attr] == undefined) return;
+		if (val == undefined) val = e.attributes[attr].value;
+		e.setAttribute("_orig_" + attr, val);
+	}
+	function orig_load(e, attr) {
+		if (e.attributes["_orig_"+attr] == undefined) return;
+		e.attributes[attr].value = e.attributes["_orig_" + attr].value;
+		e.removeAttribute("_orig_"+attr);
+	}
+	function g_to_text(e) {
+		var text = find_child(e, "title").firstChild.nodeValue;
+		return (text)
+	}
+	function g_to_func(e) {
+		var func = g_to_text(e);
+		// if there's any manipulation we want to do to the function
+		// name before it's searched, do it here before returning.
+		return (func);
+	}
+	function update_text(e) {
+		var r = find_child(e, "rect");
+		var t = find_child(e, "text");
+		var w = parseFloat(r.attributes.width.value) -3;
+		var txt = find_child(e, "title").textContent.replace(/\([^(]*\)$/,"");
+		t.attributes.x.value = parseFloat(r.attributes.x.value) + 3;
+
+		// Smaller than this size won't fit anything
+		if (w < 2 * 12 * 0.59) {
+			t.textContent = "";
+			return;
+		}
+
+		t.textContent = txt;
+		var sl = t.getSubStringLength(0, txt.length);
+		// check if only whitespace or if we can fit the entire string into width w
+		if (/^ *$/.test(txt) || sl < w)
+			return;
+
+		// this isn't perfect, but gives a good starting point
+		// and avoids calling getSubStringLength too often
+		var start = Math.floor((w/sl) * txt.length);
+		for (var x = start; x > 0; x = x-2) {
+			if (t.getSubStringLength(0, x + 2) <= w) {
+				t.textContent = txt.substring(0, x) + "..";
+				return;
+			}
+		}
+		t.textContent = "";
+	}
+
+	// zoom
+	function zoom_reset(e) {
+		if (e.attributes != undefined) {
+			orig_load(e, "x");
+			orig_load(e, "width");
+		}
+		if (e.childNodes == undefined) return;
+		for (var i = 0, c = e.childNodes; i < c.length; i++) {
+			zoom_reset(c[i]);
+		}
+	}
+	function zoom_child(e, x, ratio) {
+		if (e.attributes != undefined) {
+			if (e.attributes.x != undefined) {
+				orig_save(e, "x");
+				e.attributes.x.value = (parseFloat(e.attributes.x.value) - x - 10) * ratio + 10;
+				if (e.tagName == "text")
+					e.attributes.x.value = find_child(e.parentNode, "rect[x]").attributes.x.value + 3;
+			}
+			if (e.attributes.width != undefined) {
+				orig_save(e, "width");
+				e.attributes.width.value = parseFloat(e.attributes.width.value) * ratio;
+			}
+		}
+
+		if (e.childNodes == undefined) return;
+		for (var i = 0, c = e.childNodes; i < c.length; i++) {
+			zoom_child(c[i], x - 10, ratio);
+		}
+	}
+	function zoom_parent(e) {
+		if (e.attributes) {
+			if (e.attributes.x != undefined) {
+				orig_save(e, "x");
+				e.attributes.x.value = 10;
+			}
+			if (e.attributes.width != undefined) {
+				orig_save(e, "width");
+				e.attributes.width.value = parseInt(svg.width.baseVal.value) - (10 * 2);
+			}
+		}
+		if (e.childNodes == undefined) return;
+		for (var i = 0, c = e.childNodes; i < c.length; i++) {
+			zoom_parent(c[i]);
+		}
+	}
+	function zoom(node) {
+		var attr = find_child(node, "rect").attributes;
+		var width = parseFloat(attr.width.value);
+		var xmin = parseFloat(attr.x.value);
+		var xmax = parseFloat(xmin + width);
+		var ymin = parseFloat(attr.y.value);
+		var ratio = (svg.width.baseVal.value - 2 * 10) / width;
+
+		// XXX: Workaround for JavaScript float issues (fix me)
+		var fudge = 0.0001;
+
+		unzoombtn.classList.remove("hide");
+
+		var el = document.getElementById("frames").children;
+		for (var i = 0; i < el.length; i++) {
+			var e = el[i];
+			var a = find_child(e, "rect").attributes;
+			var ex = parseFloat(a.x.value);
+			var ew = parseFloat(a.width.value);
+			var upstack;
+			// Is it an ancestor
+			if (0 == 0) {
+				upstack = parseFloat(a.y.value) > ymin;
+			} else {
+				upstack = parseFloat(a.y.value) < ymin;
+			}
+			if (upstack) {
+				// Direct ancestor
+				if (ex <= xmin && (ex+ew+fudge) >= xmax) {
+					e.classList.add("parent");
+					zoom_parent(e);
+					update_text(e);
+				}
+				// not in current path
+				else
+					e.classList.add("hide");
+			}
+			// Children maybe
+			else {
+				// no common path
+				if (ex < xmin || ex + fudge >= xmax) {
+					e.classList.add("hide");
+				}
+				else {
+					zoom_child(e, xmin, ratio);
+					update_text(e);
+				}
+			}
+		}
+		search();
+	}
+	function unzoom(dont_update_text) {
+		unzoombtn.classList.add("hide");
+		var el = document.getElementById("frames").children;
+		for(var i = 0; i < el.length; i++) {
+			el[i].classList.remove("parent");
+			el[i].classList.remove("hide");
+			zoom_reset(el[i]);
+			if(!dont_update_text) update_text(el[i]);
+		}
+		search();
+	}
+	function clearzoom() {
+		unzoom();
+
+		// remove zoom state
+		var params = get_params();
+		if (params.x) delete params.x;
+		if (params.y) delete params.y;
+		history.replaceState(null, null, parse_params(params));
+	}
+
+	// search
+	function toggle_ignorecase() {
+		ignorecase = !ignorecase;
+		if (ignorecase) {
+			ignorecaseBtn.classList.add("show");
+		} else {
+			ignorecaseBtn.classList.remove("show");
+		}
+		reset_search();
+		search();
+	}
+	function reset_search() {
+		var el = document.querySelectorAll("#frames rect");
+		for (var i = 0; i < el.length; i++) {
+			orig_load(el[i], "fill")
+		}
+		var params = get_params();
+		delete params.s;
+		history.replaceState(null, null, parse_params(params));
+	}
+	function search_prompt() {
+		if (!searching) {
+			var term = prompt("Enter a search term (regexp " +
+			    "allowed, eg: ^ext4_)"
+			    + (ignorecase ? ", ignoring case" : "")
+			    + "\nPress Ctrl-i to toggle case sensitivity", "");
+			if (term != null) search(term);
+		} else {
+			reset_search();
+			searching = 0;
+			currentSearchTerm = null;
+			searchbtn.classList.remove("show");
+			searchbtn.firstChild.nodeValue = "Search"
+			matchedtxt.classList.add("hide");
+			matchedtxt.firstChild.nodeValue = ""
+		}
+	}
+	function search(term) {
+		if (term) currentSearchTerm = term;
+		if (currentSearchTerm === null) return;
+
+		var re = new RegExp(currentSearchTerm, ignorecase ? 'i' : '');
+		var el = document.getElementById("frames").children;
+		var matches = new Object();
+		var maxwidth = 0;
+		for (var i = 0; i < el.length; i++) {
+			var e = el[i];
+			var func = g_to_func(e);
+			var rect = find_child(e, "rect");
+			if (func == null || rect == null)
+				continue;
+
+			// Save max width. Only works as we have a root frame
+			var w = parseFloat(rect.attributes.width.value);
+			if (w > maxwidth)
+				maxwidth = w;
+
+			if (func.match(re)) {
+				// highlight
+				var x = parseFloat(rect.attributes.x.value);
+				orig_save(rect, "fill");
+				rect.attributes.fill.value = "rgb(230,0,230)";
+
+				// remember matches
+				if (matches[x] == undefined) {
+					matches[x] = w;
+				} else {
+					if (w > matches[x]) {
+						// overwrite with parent
+						matches[x] = w;
+					}
+				}
+				searching = 1;
+			}
+		}
+		if (!searching)
+			return;
+		var params = get_params();
+		params.s = currentSearchTerm;
+		history.replaceState(null, null, parse_params(params));
+
+		searchbtn.classList.add("show");
+		searchbtn.firstChild.nodeValue = "Reset Search";
+
+		// calculate percent matched, excluding vertical overlap
+		var count = 0;
+		var lastx = -1;
+		var lastw = 0;
+		var keys = Array();
+		for (k in matches) {
+			if (matches.hasOwnProperty(k))
+				keys.push(k);
+		}
+		// sort the matched frames by their x location
+		// ascending, then width descending
+		keys.sort(function(a, b){
+			return a - b;
+		});
+		// Step through frames saving only the biggest bottom-up frames
+		// thanks to the sort order. This relies on the tree property
+		// where children are always smaller than their parents.
+		var fudge = 0.0001;	// JavaScript floating point
+		for (var k in keys) {
+			var x = parseFloat(keys[k]);
+			var w = matches[keys[k]];
+			if (x >= lastx + lastw - fudge) {
+				count += w;
+				lastx = x;
+				lastw = w;
+			}
+		}
+		// display matched percent
+		matchedtxt.classList.remove("hide");
+		var pct = 100 * count / maxwidth;
+		if (pct != 100) pct = pct.toFixed(1)
+		matchedtxt.firstChild.nodeValue = "Matched: " + pct + "%";
+	}
+]]>
+</script>
+<rect x="0.0" y="0" width="1200.0" height="486.0" fill="url(#background)"  />
+<text id="title" x="600.00" y="24" >fmt format_workload CPU profile</text>
+<text id="details" x="10.00" y="469" > </text>
+<text id="unzoom" x="10.00" y="24" class="hide">Reset Zoom</text>
+<text id="search" x="1090.00" y="24" >Search</text>
+<text id="ignorecase" x="1174.00" y="24" >ic</text>
+<text id="matched" x="1090.00" y="469" > </text>
+<g id="frames">
+<g >
+<title>fmt::v12::basic_memory_buffer&lt;char, 500ul, fmt::v12::detail::allocator&lt;char&gt; &gt;::basic_memory_buffer (22,700,793 samples, 0.30%)</title><rect x="937.4" y="309" width="3.5" height="15.0" fill="rgb(222,82,19)" rx="2" ry="2" />
+<text  x="940.42" y="319.5" ></text>
+</g>
+<g >
+<title>std::char_traits&lt;char&gt;::copy (96,192,419 samples, 1.25%)</title><rect x="907.7" y="213" width="14.8" height="15.0" fill="rgb(231,121,29)" rx="2" ry="2" />
+<text  x="910.74" y="223.5" ></text>
+</g>
+<g >
+<title>_dl_relocate_object (1,509,844 samples, 0.02%)</title><rect x="1188.6" y="325" width="0.2" height="15.0" fill="rgb(231,120,28)" rx="2" ry="2" />
+<text  x="1191.55" y="335.5" ></text>
+</g>
+<g >
+<title>fmt::v12::basic_specs::type (5,686,980 samples, 0.07%)</title><rect x="838.8" y="197" width="0.9" height="15.0" fill="rgb(209,18,4)" rx="2" ry="2" />
+<text  x="841.84" y="207.5" ></text>
+</g>
+<g >
+<title>fmt::v12::basic_specs::set_dynamic_width (13,640,915 samples, 0.18%)</title><rect x="998.6" y="213" width="2.1" height="15.0" fill="rgb(242,174,41)" rx="2" ry="2" />
+<text  x="1001.64" y="223.5" ></text>
+</g>
+<g >
+<title>fmt::v12::detail::buffer&lt;char&gt;::try_resize (3,421,937 samples, 0.04%)</title><rect x="861.6" y="181" width="0.5" height="15.0" fill="rgb(211,31,7)" rx="2" ry="2" />
+<text  x="864.62" y="191.5" ></text>
+</g>
+<g >
+<title>fmt::v12::context::out (10,200,639 samples, 0.13%)</title><rect x="385.5" y="245" width="1.6" height="15.0" fill="rgb(235,140,33)" rx="2" ry="2" />
+<text  x="388.54" y="255.5" ></text>
+</g>
+<g >
+<title>fmt::v12::detail::write&lt;char, fmt::v12::basic_appender&lt;char&gt;, 0&gt; (38,393,026 samples, 0.50%)</title><rect x="179.8" y="149" width="5.8" height="15.0" fill="rgb(230,116,27)" rx="2" ry="2" />
+<text  x="182.76" y="159.5" ></text>
+</g>
+<g >
+<title>fmt::v12::context::arg (76,005,866 samples, 0.99%)</title><rect x="314.1" y="245" width="11.6" height="15.0" fill="rgb(229,112,26)" rx="2" ry="2" />
+<text  x="317.08" y="255.5" ></text>
+</g>
+<g >
+<title>fmt::v12::basic_format_args&lt;fmt::v12::context&gt;::get (90,474,923 samples, 1.18%)</title><rect x="1047.2" y="229" width="13.9" height="15.0" fill="rgb(228,106,25)" rx="2" ry="2" />
+<text  x="1050.22" y="239.5" ></text>
+</g>
+<g >
+<title>std::__cxx11::basic_string&lt;char, std::char_traits&lt;char&gt;, std::allocator&lt;char&gt; &gt; fmt::v12::to_string&lt;500ul&gt; (233,560,153 samples, 3.04%)</title><rect x="1073.3" y="309" width="35.8" height="15.0" fill="rgb(242,172,41)" rx="2" ry="2" />
+<text  x="1076.26" y="319.5" >std..</text>
+</g>
+<g >
+<title>std::__cxx11::basic_string&lt;char, std::char_traits&lt;char&gt;, std::allocator&lt;char&gt; &gt;::basic_string (452,000,554 samples, 5.88%)</title><rect x="450.0" y="293" width="69.4" height="15.0" fill="rgb(212,35,8)" rx="2" ry="2" />
+<text  x="453.02" y="303.5" >std::__..</text>
+</g>
+<g >
+<title>memcpy (1,138,490 samples, 0.01%)</title><rect x="874.9" y="149" width="0.1" height="15.0" fill="rgb(208,14,3)" rx="2" ry="2" />
+<text  x="877.85" y="159.5" ></text>
+</g>
+<g >
+<title>char const* fmt::v12::detail::parse_format_specs&lt;char&gt; (320,932,246 samples, 4.17%)</title><rect x="92.7" y="245" width="49.2" height="15.0" fill="rgb(216,55,13)" rx="2" ry="2" />
+<text  x="95.67" y="255.5" >char..</text>
+</g>
+<g >
+<title>fmt::v12::basic_appender&lt;char&gt; fmt::v12::detail::copy&lt;char, char const*, fmt::v12::basic_appender&lt;char&gt;, 0&gt; (104,240,231 samples, 1.36%)</title><rect x="1024.0" y="117" width="16.0" height="15.0" fill="rgb(213,38,9)" rx="2" ry="2" />
+<text  x="1027.02" y="127.5" ></text>
+</g>
+<g >
+<title>fmt::v12::basic_specs::set_align (32,865,902 samples, 0.43%)</title><rect x="130.6" y="229" width="5.0" height="15.0" fill="rgb(229,110,26)" rx="2" ry="2" />
+<text  x="133.60" y="239.5" ></text>
+</g>
+<g >
+<title>char* fmt::v12::detail::do_format_decimal&lt;char, unsigned int&gt; (3,420,138 samples, 0.04%)</title><rect x="355.6" y="181" width="0.5" height="15.0" fill="rgb(210,26,6)" rx="2" ry="2" />
+<text  x="358.61" y="191.5" ></text>
+</g>
+<g >
+<title>void fmt::v12::detail::buffer&lt;char&gt;::append&lt;char&gt; (301,049,243 samples, 3.91%)</title><rect x="403.8" y="229" width="46.2" height="15.0" fill="rgb(238,152,36)" rx="2" ry="2" />
+<text  x="406.83" y="239.5" >void..</text>
+</g>
+<g >
+<title>fmt::v12::basic_specs::localized (1,110,132 samples, 0.01%)</title><rect x="833.7" y="165" width="0.2" height="15.0" fill="rgb(222,81,19)" rx="2" ry="2" />
+<text  x="836.69" y="175.5" ></text>
+</g>
+<g >
+<title>std::__cxx11::basic_string&lt;char, std::char_traits&lt;char&gt;, std::allocator&lt;char&gt; &gt;::_M_set_length (11,332,327 samples, 0.15%)</title><rect x="826.4" y="117" width="1.7" height="15.0" fill="rgb(249,204,48)" rx="2" ry="2" />
+<text  x="829.39" y="127.5" ></text>
+</g>
+<g >
+<title>fmt::v12::basic_specs::set_type (23,770,039 samples, 0.31%)</title><rect x="603.0" y="213" width="3.7" height="15.0" fill="rgb(250,210,50)" rx="2" ry="2" />
+<text  x="606.03" y="223.5" ></text>
+</g>
+<g >
+<title>fmt::v12::basic_appender&lt;char&gt; fmt::v12::detail::write_padded&lt;char,  (119,569,742 samples, 1.55%)</title><rect x="1023.5" y="165" width="18.3" height="15.0" fill="rgb(220,73,17)" rx="2" ry="2" />
+<text  x="1026.50" y="175.5" ></text>
+</g>
+<g >
+<title>fmt::v12::detail::dragonbox::get_cached_power (1,135,746 samples, 0.01%)</title><rect x="862.7" y="181" width="0.1" height="15.0" fill="rgb(205,3,0)" rx="2" ry="2" />
+<text  x="865.67" y="191.5" ></text>
+</g>
+<g >
+<title>fmt::v12::detail::parse_dynamic_spec_result&lt;char&gt; fmt::v12::detail::parse_dynamic_spec&lt;char&gt; (36,321,622 samples, 0.47%)</title><rect x="1000.7" y="213" width="5.6" height="15.0" fill="rgb(249,205,49)" rx="2" ry="2" />
+<text  x="1003.74" y="223.5" ></text>
+</g>
+<g >
+<title>fmt::v12::detail::umul128 (11,371,207 samples, 0.15%)</title><rect x="863.7" y="165" width="1.8" height="15.0" fill="rgb(236,143,34)" rx="2" ry="2" />
+<text  x="866.72" y="175.5" ></text>
+</g>
+<g >
+<title>void fmt::v12::detail::buffer&lt;char&gt;::append&lt;char&gt; (147,066,997 samples, 1.91%)</title><rect x="737.9" y="37" width="22.6" height="15.0" fill="rgb(238,152,36)" rx="2" ry="2" />
+<text  x="740.90" y="47.5" >v..</text>
+</g>
+<g >
+<title>std::__cxx11::basic_string&lt;char, std::char_traits&lt;char&gt;, std::allocator&lt;char&gt; &gt;::_M_length (11,332,327 samples, 0.15%)</title><rect x="826.4" y="101" width="1.7" height="15.0" fill="rgb(207,12,3)" rx="2" ry="2" />
+<text  x="829.39" y="111.5" ></text>
+</g>
+<g >
+<title>std::__new_allocator&lt;char&gt;::allocate (80,341,026 samples, 1.04%)</title><rect x="451.1" y="197" width="12.3" height="15.0" fill="rgb(226,98,23)" rx="2" ry="2" />
+<text  x="454.07" y="207.5" ></text>
+</g>
+<g >
+<title>fmt::v12::basic_appender&lt;char&gt; fmt::v12::detail::copy_noinline&lt;char, char const*, fmt::v12::basic_appender&lt;char&gt; &gt; (70,168,376 samples, 0.91%)</title><rect x="1062.5" y="261" width="10.8" height="15.0" fill="rgb(238,154,36)" rx="2" ry="2" />
+<text  x="1065.50" y="271.5" ></text>
+</g>
+<g >
+<title>fmt::v12::detail::buffer&lt;char&gt;::size (5,688,479 samples, 0.07%)</title><rect x="1073.3" y="293" width="0.8" height="15.0" fill="rgb(231,123,29)" rx="2" ry="2" />
+<text  x="1076.26" y="303.5" ></text>
+</g>
+<g >
+<title>fmt::v12::basic_appender&lt;char&gt; fmt::v12::detail::copy&lt;char, char const*, fmt::v12::basic_appender&lt;char&gt;, 0&gt; (147,066,997 samples, 1.91%)</title><rect x="737.9" y="53" width="22.6" height="15.0" fill="rgb(213,38,9)" rx="2" ry="2" />
+<text  x="740.90" y="63.5" >f..</text>
+</g>
+<g >
+<title>std::__cxx11::basic_string&lt;char, std::char_traits&lt;char&gt;, std::allocator&lt;char&gt; &gt;::_S_allocate (80,341,026 samples, 1.04%)</title><rect x="451.1" y="245" width="12.3" height="15.0" fill="rgb(209,19,4)" rx="2" ry="2" />
+<text  x="454.07" y="255.5" ></text>
+</g>
+<g >
+<title>decltype  (1,040,337,105 samples, 13.53%)</title><rect x="141.9" y="245" width="159.6" height="15.0" fill="rgb(214,42,10)" rx="2" ry="2" />
+<text  x="144.91" y="255.5" >decltype </text>
+</g>
+<g >
+<title>void fmt::v12::detail::buffer&lt;char&gt;::append&lt;char&gt; (29,535,144 samples, 0.38%)</title><rect x="879.0" y="229" width="4.6" height="15.0" fill="rgb(238,152,36)" rx="2" ry="2" />
+<text  x="882.03" y="239.5" ></text>
+</g>
+<g >
+<title>__memcpy_avx512_unaligned_erms (348,965,529 samples, 4.54%)</title><rect x="465.7" y="197" width="53.5" height="15.0" fill="rgb(214,43,10)" rx="2" ry="2" />
+<text  x="468.66" y="207.5" >__mem..</text>
+</g>
+<g >
+<title>std::__cxx11::basic_string&lt;char, std::char_traits&lt;char&gt;, std::allocator&lt;char&gt; &gt;::_M_capacity (5,667,868 samples, 0.07%)</title><rect x="450.2" y="261" width="0.9" height="15.0" fill="rgb(239,160,38)" rx="2" ry="2" />
+<text  x="453.20" y="271.5" ></text>
+</g>
+<g >
+<title>std::__cxx11::basic_string&lt;char, std::char_traits&lt;char&gt;, std::allocator&lt;char&gt; &gt;::_Alloc_hider::_Alloc_hider (2,279,739 samples, 0.03%)</title><rect x="886.7" y="277" width="0.3" height="15.0" fill="rgb(212,32,7)" rx="2" ry="2" />
+<text  x="889.69" y="287.5" ></text>
+</g>
+<g >
+<title>char* fmt::v12::detail::do_format_decimal&lt;char, unsigned int&gt; (2,265,313 samples, 0.03%)</title><rect x="355.8" y="149" width="0.3" height="15.0" fill="rgb(210,26,6)" rx="2" ry="2" />
+<text  x="358.79" y="159.5" ></text>
+</g>
+<g >
+<title>char const* fmt::v12::detail::parse_precision&lt;char&gt; (31,760,477 samples, 0.41%)</title><rect x="596.4" y="229" width="4.9" height="15.0" fill="rgb(245,185,44)" rx="2" ry="2" />
+<text  x="599.40" y="239.5" ></text>
+</g>
+<g >
+<title>fmt::v12::basic_appender&lt;char&gt; fmt::v12::detail::write&lt;char, int, 0&gt; (187,281,694 samples, 2.44%)</title><rect x="1014.6" y="213" width="28.8" height="15.0" fill="rgb(235,139,33)" rx="2" ry="2" />
+<text  x="1017.64" y="223.5" >fm..</text>
+</g>
+<g >
+<title>fmt::v12::detail::buffer&lt;char&gt;::set (4,529,611 samples, 0.06%)</title><rect x="534.3" y="293" width="0.7" height="15.0" fill="rgb(248,201,48)" rx="2" ry="2" />
+<text  x="537.30" y="303.5" ></text>
+</g>
+<g >
+<title>tcache_get (26,058,651 samples, 0.34%)</title><rect x="459.4" y="149" width="4.0" height="15.0" fill="rgb(253,222,53)" rx="2" ry="2" />
+<text  x="462.40" y="159.5" ></text>
+</g>
+<g >
+<title>char* fmt::v12::detail::do_format_decimal&lt;char, unsigned int&gt; (13,526,088 samples, 0.18%)</title><rect x="1021.4" y="133" width="2.1" height="15.0" fill="rgb(210,26,6)" rx="2" ry="2" />
+<text  x="1024.42" y="143.5" ></text>
+</g>
+<g >
+<title>fmt::v12::detail::parse_format_specs&lt;char&gt; (40,870,440 samples, 0.53%)</title><rect x="135.6" y="229" width="6.3" height="15.0" fill="rgb(235,140,33)" rx="2" ry="2" />
+<text  x="138.64" y="239.5" ></text>
+</g>
+<g >
+<title>fmt::v12::detail::parse_format_specs&lt;char&gt; (46,388,016 samples, 0.60%)</title><rect x="1006.3" y="229" width="7.1" height="15.0" fill="rgb(235,140,33)" rx="2" ry="2" />
+<text  x="1009.31" y="239.5" ></text>
+</g>
+<g >
+<title>fmt::v12::detail::dragonbox::cache_accessor&lt;double&gt;::get_cached_power (1,135,746 samples, 0.01%)</title><rect x="862.7" y="165" width="0.1" height="15.0" fill="rgb(225,92,22)" rx="2" ry="2" />
+<text  x="865.67" y="175.5" ></text>
+</g>
+<g >
+<title>fmt::v12::detail::buffer&lt;char&gt;::set (22,700,793 samples, 0.30%)</title><rect x="937.4" y="293" width="3.5" height="15.0" fill="rgb(248,201,48)" rx="2" ry="2" />
+<text  x="940.42" y="303.5" ></text>
+</g>
+<g >
+<title>void fmt::v12::detail::buffer&lt;char&gt;::append&lt;char&gt; (2,258,704 samples, 0.03%)</title><rect x="45.0" y="261" width="0.3" height="15.0" fill="rgb(238,152,36)" rx="2" ry="2" />
+<text  x="47.98" y="271.5" ></text>
+</g>
+<g >
+<title>fmt::v12::basic_appender&lt;char&gt; fmt::v12::detail::copy&lt;char, char const*, fmt::v12::basic_appender&lt;char&gt;, 0&gt; (60,028,232 samples, 0.78%)</title><rect x="1064.1" y="245" width="9.2" height="15.0" fill="rgb(213,38,9)" rx="2" ry="2" />
+<text  x="1067.05" y="255.5" ></text>
+</g>
+<g >
+<title>fmt::v12::basic_specs::set_dynamic_precision (13,631,323 samples, 0.18%)</title><rect x="596.6" y="213" width="2.1" height="15.0" fill="rgb(228,106,25)" rx="2" ry="2" />
+<text  x="599.58" y="223.5" ></text>
+</g>
+<g >
+<title>char const* fmt::v12::detail::parse_format_specs&lt;char&gt; (253,071,508 samples, 3.29%)</title><rect x="974.6" y="245" width="38.8" height="15.0" fill="rgb(216,55,13)" rx="2" ry="2" />
+<text  x="977.60" y="255.5" >cha..</text>
+</g>
+<g >
+<title>fmt::v12::basic_specs::dynamic (11,383,192 samples, 0.15%)</title><rect x="312.3" y="245" width="1.8" height="15.0" fill="rgb(229,111,26)" rx="2" ry="2" />
+<text  x="315.34" y="255.5" ></text>
+</g>
+<g >
+<title>memcpy@plt (1,129,392 samples, 0.01%)</title><rect x="519.2" y="197" width="0.2" height="15.0" fill="rgb(224,88,21)" rx="2" ry="2" />
+<text  x="522.20" y="207.5" ></text>
+</g>
+<g >
+<title>fmt::v12::basic_appender&lt;char&gt; fmt::v12::detail::write&lt;char, fmt::v12::basic_appender&lt;char&gt; &gt; (1,017,647,416 samples, 13.23%)</title><rect x="143.5" y="197" width="156.1" height="15.0" fill="rgb(236,146,35)" rx="2" ry="2" />
+<text  x="146.48" y="207.5" >fmt::v12::basic_appe..</text>
+</g>
+<g >
+<title>__libc_start_call_main (7,680,698,480 samples, 99.87%)</title><rect x="10.0" y="373" width="1178.5" height="15.0" fill="rgb(210,26,6)" rx="2" ry="2" />
+<text  x="13.00" y="383.5" >__libc_start_call_main</text>
+</g>
+<g >
+<title>fmt::v12::basic_appender&lt;char&gt; fmt::v12::detail::copy&lt;char, char const*, fmt::v12::basic_appender&lt;char&gt;, 0&gt; (5,673,335 samples, 0.07%)</title><rect x="957.4" y="277" width="0.9" height="15.0" fill="rgb(213,38,9)" rx="2" ry="2" />
+<text  x="960.44" y="287.5" ></text>
+</g>
+<g >
+<title>std::__cxx11::basic_string&lt;char, std::char_traits&lt;char&gt;, std::allocator&lt;char&gt; &gt;::_Alloc_hider::_Alloc_hider (1,139,346 samples, 0.01%)</title><rect x="1074.3" y="277" width="0.2" height="15.0" fill="rgb(212,32,7)" rx="2" ry="2" />
+<text  x="1077.31" y="287.5" ></text>
+</g>
+<g >
+<title>int fmt::v12::detail::parse_nonnegative_int&lt;char&gt; (5,647,163 samples, 0.07%)</title><rect x="600.4" y="197" width="0.9" height="15.0" fill="rgb(210,25,6)" rx="2" ry="2" />
+<text  x="603.41" y="207.5" ></text>
+</g>
+<g >
+<title>char const* fmt::v12::detail::parse_replacement_field&lt;char, fmt::v12::detail::format_handler&lt;char&gt;&amp;&gt; (1,916,392,917 samples, 24.92%)</title><rect x="581.8" y="277" width="294.1" height="15.0" fill="rgb(223,82,19)" rx="2" ry="2" />
+<text  x="584.85" y="287.5" >char const* fmt::v12::detail::parse_rep..</text>
+</g>
+<g >
+<title>operator new (7,921,681 samples, 0.10%)</title><rect x="1188.8" y="405" width="1.2" height="15.0" fill="rgb(216,51,12)" rx="2" ry="2" />
+<text  x="1191.78" y="415.5" ></text>
+</g>
+<g >
+<title>fmt::v12::basic_appender&lt;char&gt;::operator= (7,405,039 samples, 0.10%)</title><rect x="1040.7" y="101" width="1.1" height="15.0" fill="rgb(230,116,27)" rx="2" ry="2" />
+<text  x="1043.71" y="111.5" ></text>
+</g>
+<g >
+<title>elf_machine_rela (1,388,530 samples, 0.02%)</title><rect x="1188.6" y="293" width="0.2" height="15.0" fill="rgb(230,117,28)" rx="2" ry="2" />
+<text  x="1191.55" y="303.5" ></text>
+</g>
+<g >
+<title>int fmt::v12::min_of&lt;int&gt; (1,127,008 samples, 0.01%)</title><rect x="875.0" y="181" width="0.2" height="15.0" fill="rgb(246,192,45)" rx="2" ry="2" />
+<text  x="878.03" y="191.5" ></text>
+</g>
+<g >
+<title>std::__cxx11::basic_string&lt;char, std::char_traits&lt;char&gt;, std::allocator&lt;char&gt; &gt;::_S_copy (96,192,419 samples, 1.25%)</title><rect x="907.7" y="245" width="14.8" height="15.0" fill="rgb(254,227,54)" rx="2" ry="2" />
+<text  x="910.74" y="255.5" ></text>
+</g>
+<g >
+<title>std::__cxx11::basic_string&lt;char, std::char_traits&lt;char&gt;, std::allocator&lt;char&gt; &gt; fmt::v12::to_string&lt;500ul&gt; (253,759,987 samples, 3.30%)</title><rect x="883.6" y="309" width="38.9" height="15.0" fill="rgb(242,172,41)" rx="2" ry="2" />
+<text  x="886.56" y="319.5" >std..</text>
+</g>
+<g >
+<title>_int_free (306,850,849 samples, 3.99%)</title><rect x="1131.7" y="229" width="47.1" height="15.0" fill="rgb(247,196,46)" rx="2" ry="2" />
+<text  x="1134.69" y="239.5" >_int..</text>
+</g>
+<g >
+<title>void fmt::v12::detail::buffer&lt;char&gt;::append&lt;char&gt; (104,240,231 samples, 1.36%)</title><rect x="1024.0" y="101" width="16.0" height="15.0" fill="rgb(238,152,36)" rx="2" ry="2" />
+<text  x="1027.02" y="111.5" ></text>
+</g>
+<g >
+<title>fmt::v12::basic_appender&lt;char&gt; fmt::v12::detail::write_int_noinline&lt;char, fmt::v12::basic_appender&lt;char&gt;, unsigned int&gt; (177,283,286 samples, 2.31%)</title><rect x="1014.6" y="197" width="27.2" height="15.0" fill="rgb(224,90,21)" rx="2" ry="2" />
+<text  x="1017.64" y="207.5" >f..</text>
+</g>
+<g >
+<title>operator new (130,304,068 samples, 1.69%)</title><rect x="887.6" y="181" width="20.0" height="15.0" fill="rgb(216,51,12)" rx="2" ry="2" />
+<text  x="890.57" y="191.5" ></text>
+</g>
+<g >
+<title>std::__cxx11::basic_string&lt;char, std::char_traits&lt;char&gt;, std::allocator&lt;char&gt; &gt;::basic_string (30,594,274 samples, 0.40%)</title><rect x="823.4" y="133" width="4.7" height="15.0" fill="rgb(212,35,8)" rx="2" ry="2" />
+<text  x="826.43" y="143.5" ></text>
+</g>
+<g >
+<title>fmt::v12::detail::digit_grouping&lt;char&gt;::digit_grouping (157,511,664 samples, 2.05%)</title><rect x="804.0" y="149" width="24.1" height="15.0" fill="rgb(222,80,19)" rx="2" ry="2" />
+<text  x="806.96" y="159.5" >f..</text>
+</g>
+<g >
+<title>fmt::v12::detail::for_each_codepoint&lt;fmt::v12::detail::write&lt;char, fmt::v12::basic_appender&lt;char&gt;, 0&gt; (719,031,436 samples, 9.35%)</title><rect x="189.3" y="149" width="110.3" height="15.0" fill="rgb(216,51,12)" rx="2" ry="2" />
+<text  x="192.30" y="159.5" >fmt::v12::det..</text>
+</g>
+<g >
+<title>fmt::v12::detail::dragonbox::umul128_upper64 (2,272,364 samples, 0.03%)</title><rect x="862.8" y="165" width="0.4" height="15.0" fill="rgb(219,66,15)" rx="2" ry="2" />
+<text  x="865.84" y="175.5" ></text>
+</g>
+<g >
+<title>std::char_traits&lt;char&gt;::copy (218,813,254 samples, 2.85%)</title><rect x="1075.5" y="213" width="33.6" height="15.0" fill="rgb(231,121,29)" rx="2" ry="2" />
+<text  x="1078.53" y="223.5" >st..</text>
+</g>
+<g >
+<title>fmt::v12::detail::buffer&lt;char&gt;::data (38,595,720 samples, 0.50%)</title><rect x="940.9" y="277" width="5.9" height="15.0" fill="rgb(245,184,44)" rx="2" ry="2" />
+<text  x="943.90" y="287.5" ></text>
+</g>
+<g >
+<title>std::__cxx11::basic_string&lt;char, std::char_traits&lt;char&gt;, std::allocator&lt;char&gt; &gt; fmt::v12::format&lt;int&amp;&gt; (1,216,144,515 samples, 15.81%)</title><rect x="922.5" y="341" width="186.6" height="15.0" fill="rgb(245,185,44)" rx="2" ry="2" />
+<text  x="925.50" y="351.5" >std::__cxx11::basic_stri..</text>
+</g>
+<g >
+<title>fmt::v12::detail::write_fixed&lt;char, fmt::v12::detail::digit_grouping&lt;char&gt;, fmt::v12::basic_appender&lt;char&gt;, fmt::v12::detail::big_decimal_fp&gt; (482,178,369 samples, 6.27%)</title><rect x="728.1" y="117" width="74.0" height="15.0" fill="rgb(222,81,19)" rx="2" ry="2" />
+<text  x="731.07" y="127.5" >fmt::v12..</text>
+</g>
+<g >
+<title>main (7,680,698,480 samples, 99.87%)</title><rect x="10.0" y="357" width="1178.5" height="15.0" fill="rgb(243,179,42)" rx="2" ry="2" />
+<text  x="13.00" y="367.5" >main</text>
+</g>
+<g >
+<title>fmt::v12::detail::format_handler&lt;char&gt;::on_text (49,933,764 samples, 0.65%)</title><rect x="875.9" y="277" width="7.7" height="15.0" fill="rgb(223,86,20)" rx="2" ry="2" />
+<text  x="878.90" y="287.5" ></text>
+</g>
+<g >
+<title>fmt::v12::context::arg (2,305,467 samples, 0.03%)</title><rect x="875.4" y="245" width="0.3" height="15.0" fill="rgb(229,112,26)" rx="2" ry="2" />
+<text  x="878.37" y="255.5" ></text>
+</g>
+<g >
+<title>std::__cxx11::basic_string&lt;char, std::char_traits&lt;char&gt;, std::allocator&lt;char&gt; &gt;::_M_is_local (4,545,805 samples, 0.06%)</title><rect x="1187.8" y="309" width="0.7" height="15.0" fill="rgb(241,168,40)" rx="2" ry="2" />
+<text  x="1190.82" y="319.5" ></text>
+</g>
+<g >
+<title>std::allocator_traits&lt;std::allocator&lt;char&gt; &gt;::deallocate (513,021,014 samples, 6.67%)</title><rect x="1109.1" y="293" width="78.7" height="15.0" fill="rgb(213,40,9)" rx="2" ry="2" />
+<text  x="1112.10" y="303.5" >std::allo..</text>
+</g>
+<g >
+<title>fmt::v12::detail::format_float&lt;double&gt; (2,306,915 samples, 0.03%)</title><rect x="870.7" y="149" width="0.3" height="15.0" fill="rgb(205,0,0)" rx="2" ry="2" />
+<text  x="873.68" y="159.5" ></text>
+</g>
+<g >
+<title>memcpy@plt (2,291,603 samples, 0.03%)</title><rect x="922.1" y="197" width="0.4" height="15.0" fill="rgb(224,88,21)" rx="2" ry="2" />
+<text  x="925.14" y="207.5" ></text>
+</g>
+<g >
+<title>checked_request2size (2,277,211 samples, 0.03%)</title><rect x="459.0" y="149" width="0.4" height="15.0" fill="rgb(252,219,52)" rx="2" ry="2" />
+<text  x="462.05" y="159.5" ></text>
+</g>
+<g >
+<title>std::__cxx11::basic_string&lt;char, std::char_traits&lt;char&gt;, std::allocator&lt;char&gt; &gt;::_M_create (132,584,032 samples, 1.72%)</title><rect x="887.2" y="261" width="20.4" height="15.0" fill="rgb(248,198,47)" rx="2" ry="2" />
+<text  x="890.22" y="271.5" ></text>
+</g>
+<g >
+<title>char const* fmt::v12::detail::parse_replacement_field&lt;char, fmt::v12::detail::format_handler&lt;char&gt;&amp;&gt; (642,736,699 samples, 8.36%)</title><rect x="962.5" y="277" width="98.6" height="15.0" fill="rgb(223,82,19)" rx="2" ry="2" />
+<text  x="965.48" y="287.5" >char const*..</text>
+</g>
+<g >
+<title>fmt::v12::detail::write_int_arg&lt;std::conditional&lt; (9,998,408 samples, 0.13%)</title><rect x="1041.8" y="197" width="1.6" height="15.0" fill="rgb(237,151,36)" rx="2" ry="2" />
+<text  x="1044.85" y="207.5" ></text>
+</g>
+<g >
+<title>std::allocator&lt;char&gt;::allocate (132,584,032 samples, 1.72%)</title><rect x="887.2" y="213" width="20.4" height="15.0" fill="rgb(249,203,48)" rx="2" ry="2" />
+<text  x="890.22" y="223.5" ></text>
+</g>
+<g >
+<title>fmt::v12::basic_appender&lt;char&gt; fmt::v12::detail::copy&lt;char, char const*, fmt::v12::basic_appender&lt;char&gt;, 0&gt; (38,393,026 samples, 0.50%)</title><rect x="179.8" y="133" width="5.8" height="15.0" fill="rgb(213,38,9)" rx="2" ry="2" />
+<text  x="182.76" y="143.5" ></text>
+</g>
+<g >
+<title>fmt::v12::detail::format_handler&lt;char&gt;::on_format_specs (1,658,749,464 samples, 21.57%)</title><rect x="71.2" y="261" width="254.5" height="15.0" fill="rgb(242,173,41)" rx="2" ry="2" />
+<text  x="74.23" y="271.5" >fmt::v12::detail::format_handler&lt;..</text>
+</g>
+<g >
+<title>fmt::v12::basic_appender&lt;char&gt; fmt::v12::detail::fill_n&lt;fmt::v12::basic_appender&lt;char&gt;, unsigned long, char&gt; (148,192,549 samples, 1.93%)</title><rect x="156.7" y="133" width="22.7" height="15.0" fill="rgb(221,77,18)" rx="2" ry="2" />
+<text  x="159.67" y="143.5" >f..</text>
+</g>
+<g >
+<title>strlen@plt (4,537,525 samples, 0.06%)</title><rect x="300.8" y="181" width="0.7" height="15.0" fill="rgb(240,162,38)" rx="2" ry="2" />
+<text  x="303.85" y="191.5" ></text>
+</g>
+<g >
+<title>char* fmt::v12::detail::copy&lt;char, char const*, char*, 0&gt; (21,556,429 samples, 0.28%)</title><rect x="186.0" y="149" width="3.3" height="15.0" fill="rgb(233,132,31)" rx="2" ry="2" />
+<text  x="188.99" y="159.5" ></text>
+</g>
+<g >
+<title>fmt::v12::detail::dragonbox::floor_log2_pow10 (1,128,162 samples, 0.01%)</title><rect x="862.5" y="181" width="0.2" height="15.0" fill="rgb(230,118,28)" rx="2" ry="2" />
+<text  x="865.50" y="191.5" ></text>
+</g>
+<g >
+<title>fmt::v12::context::arg (90,474,923 samples, 1.18%)</title><rect x="1047.2" y="245" width="13.9" height="15.0" fill="rgb(229,112,26)" rx="2" ry="2" />
+<text  x="1050.22" y="255.5" ></text>
+</g>
+<g >
+<title>char const* fmt::v12::detail::parse_format_specs&lt;char&gt; (129,243,801 samples, 1.68%)</title><rect x="586.8" y="245" width="19.9" height="15.0" fill="rgb(216,55,13)" rx="2" ry="2" />
+<text  x="589.84" y="255.5" ></text>
+</g>
+<g >
+<title>void fmt::v12::detail::arg_formatter&lt;char&gt;::operator (187,281,694 samples, 2.44%)</title><rect x="1014.6" y="229" width="28.8" height="15.0" fill="rgb(247,194,46)" rx="2" ry="2" />
+<text  x="1017.64" y="239.5" >vo..</text>
+</g>
+<g >
+<title>void fmt::v12::detail::parse_format_string&lt;char, fmt::v12::detail::format_handler&lt;char&gt; &gt; (748,041,605 samples, 9.73%)</title><rect x="958.5" y="293" width="114.8" height="15.0" fill="rgb(223,83,19)" rx="2" ry="2" />
+<text  x="961.48" y="303.5" >void fmt::v12:..</text>
+</g>
+<g >
+<title>fmt::v12::basic_specs::set_type (24,872,145 samples, 0.32%)</title><rect x="1009.6" y="213" width="3.8" height="15.0" fill="rgb(250,210,50)" rx="2" ry="2" />
+<text  x="1012.61" y="223.5" ></text>
+</g>
+<g >
+<title>__memcpy_avx512_unaligned_erms (93,900,816 samples, 1.22%)</title><rect x="907.7" y="197" width="14.4" height="15.0" fill="rgb(214,43,10)" rx="2" ry="2" />
+<text  x="910.74" y="207.5" ></text>
+</g>
+<g >
+<title>std::__cxx11::basic_string&lt;char, std::char_traits&lt;char&gt;, std::allocator&lt;char&gt; &gt;::~basic_string (517,566,819 samples, 6.73%)</title><rect x="1109.1" y="341" width="79.4" height="15.0" fill="rgb(248,201,48)" rx="2" ry="2" />
+<text  x="1112.10" y="351.5" >std::__cx..</text>
+</g>
+<g >
+<title>char const* fmt::v12::detail::parse_width&lt;char&gt; (24,794,273 samples, 0.32%)</title><rect x="126.8" y="229" width="3.8" height="15.0" fill="rgb(210,23,5)" rx="2" ry="2" />
+<text  x="129.80" y="239.5" ></text>
+</g>
+<g >
+<title>fmt::v12::basic_memory_buffer&lt;char, 500ul, fmt::v12::detail::allocator&lt;char&gt; &gt;::~basic_memory_buffer (1,138,185 samples, 0.01%)</title><rect x="39.2" y="309" width="0.2" height="15.0" fill="rgb(208,18,4)" rx="2" ry="2" />
+<text  x="42.23" y="319.5" ></text>
+</g>
+<g >
+<title>fmt::v12::detail::value&lt;fmt::v12::context&gt;::value (1,129,312 samples, 0.01%)</title><rect x="27.6" y="325" width="0.2" height="15.0" fill="rgb(217,57,13)" rx="2" ry="2" />
+<text  x="30.64" y="335.5" ></text>
+</g>
+<g >
+<title>void fmt::v12::detail::write2digits&lt;char&gt; (13,526,088 samples, 0.18%)</title><rect x="1021.4" y="149" width="2.1" height="15.0" fill="rgb(209,21,5)" rx="2" ry="2" />
+<text  x="1024.42" y="159.5" ></text>
+</g>
+<g >
+<title>fmt::v12::basic_appender&lt;char&gt; fmt::v12::detail::write_fixed&lt;char, fmt::v12::detail::digit_grouping&lt;char&gt;, fmt::v12::basic_appender&lt;char&gt;, fmt::v12::detail::big_decimal_fp&gt; (907,175,467 samples, 11.80%)</title><rect x="694.5" y="165" width="139.2" height="15.0" fill="rgb(235,138,33)" rx="2" ry="2" />
+<text  x="697.50" y="175.5" >fmt::v12::basic_a..</text>
+</g>
+<g >
+<title>fmt::v12::detail::vformat_to (2,676,105,493 samples, 34.80%)</title><rect x="39.4" y="309" width="410.6" height="15.0" fill="rgb(216,51,12)" rx="2" ry="2" />
+<text  x="42.41" y="319.5" >fmt::v12::detail::vformat_to</text>
+</g>
+<g >
+<title>_dl_start_final (1,756,501 samples, 0.02%)</title><rect x="1188.5" y="373" width="0.3" height="15.0" fill="rgb(252,216,51)" rx="2" ry="2" />
+<text  x="1191.51" y="383.5" ></text>
+</g>
+<g >
+<title>fmt::v12::detail::format_handler&lt;char&gt;::on_text (410,057,617 samples, 5.33%)</title><rect x="387.1" y="277" width="62.9" height="15.0" fill="rgb(223,86,20)" rx="2" ry="2" />
+<text  x="390.11" y="287.5" >fmt::v..</text>
+</g>
+<g >
+<title>std::__cxx11::basic_string&lt;char, std::char_traits&lt;char&gt;, std::allocator&lt;char&gt; &gt;::_M_data (2,279,542 samples, 0.03%)</title><rect x="1188.2" y="293" width="0.3" height="15.0" fill="rgb(206,6,1)" rx="2" ry="2" />
+<text  x="1191.16" y="303.5" ></text>
+</g>
+<g >
+<title>fmt::v12::detail::do_count_digits (97,484,370 samples, 1.27%)</title><rect x="361.4" y="181" width="14.9" height="15.0" fill="rgb(228,106,25)" rx="2" ry="2" />
+<text  x="364.35" y="191.5" ></text>
+</g>
+<g >
+<title>__strlen_evex (7,942,601 samples, 0.10%)</title><rect x="299.6" y="181" width="1.2" height="15.0" fill="rgb(240,164,39)" rx="2" ry="2" />
+<text  x="302.63" y="191.5" ></text>
+</g>
+<g >
+<title>fmt::v12::detail::digit_grouping&lt;char&gt;::count_separators (12,404,214 samples, 0.16%)</title><rect x="802.1" y="149" width="1.9" height="15.0" fill="rgb(215,48,11)" rx="2" ry="2" />
+<text  x="805.05" y="159.5" ></text>
+</g>
+<g >
+<title>_dl_lookup_symbol_x (1,171,902 samples, 0.02%)</title><rect x="1188.6" y="261" width="0.2" height="15.0" fill="rgb(211,28,6)" rx="2" ry="2" />
+<text  x="1191.58" y="271.5" ></text>
+</g>
+<g >
+<title>fmt::v12::basic_string_view&lt;char&gt;::basic_string_view (12,480,126 samples, 0.16%)</title><rect x="299.6" y="197" width="1.9" height="15.0" fill="rgb(254,225,53)" rx="2" ry="2" />
+<text  x="302.63" y="207.5" ></text>
+</g>
+<g >
+<title>std::__cxx11::basic_string&lt;char, std::char_traits&lt;char&gt;, std::allocator&lt;char&gt; &gt;::_M_local_data (1,149,778 samples, 0.01%)</title><rect x="887.0" y="277" width="0.2" height="15.0" fill="rgb(214,42,10)" rx="2" ry="2" />
+<text  x="890.04" y="287.5" ></text>
+</g>
+<g >
+<title>fmt::v12::detail::digit_grouping&lt;char&gt;::next (12,404,214 samples, 0.16%)</title><rect x="802.1" y="133" width="1.9" height="15.0" fill="rgb(218,60,14)" rx="2" ry="2" />
+<text  x="805.05" y="143.5" ></text>
+</g>
+<g >
+<title>fmt::v12::basic_format_args&lt;fmt::v12::context&gt;::type (1,130,954 samples, 0.01%)</title><rect x="385.4" y="213" width="0.1" height="15.0" fill="rgb(238,153,36)" rx="2" ry="2" />
+<text  x="388.37" y="223.5" ></text>
+</g>
+<g >
+<title>fmt::v12::basic_appender&lt;char&gt; fmt::v12::detail::write&lt;char, fmt::v12::basic_appender&lt;char&gt; &gt; (1,031,271,011 samples, 13.41%)</title><rect x="143.3" y="213" width="158.2" height="15.0" fill="rgb(236,146,35)" rx="2" ry="2" />
+<text  x="146.30" y="223.5" >fmt::v12::basic_appe..</text>
+</g>
+<g >
+<title>do_lookup_x (764,942 samples, 0.01%)</title><rect x="1188.6" y="245" width="0.2" height="15.0" fill="rgb(245,187,44)" rx="2" ry="2" />
+<text  x="1191.65" y="255.5" ></text>
+</g>
+<g >
+<title>fmt::v12::detail::count_digits (97,484,370 samples, 1.27%)</title><rect x="361.4" y="197" width="14.9" height="15.0" fill="rgb(254,229,54)" rx="2" ry="2" />
+<text  x="364.35" y="207.5" ></text>
+</g>
+<g >
+<title>__GI___libc_malloc (57,676,412 samples, 0.75%)</title><rect x="454.5" y="165" width="8.9" height="15.0" fill="rgb(219,68,16)" rx="2" ry="2" />
+<text  x="457.54" y="175.5" ></text>
+</g>
+<g >
+<title>void fmt::v12::detail::write2digits&lt;char&gt; (2,265,313 samples, 0.03%)</title><rect x="355.8" y="165" width="0.3" height="15.0" fill="rgb(209,21,5)" rx="2" ry="2" />
+<text  x="358.79" y="175.5" ></text>
+</g>
+<g >
+<title>fmt::v12::parse_context&lt;char&gt;::parse_context (1,155,106 samples, 0.02%)</title><rect x="958.3" y="293" width="0.2" height="15.0" fill="rgb(210,26,6)" rx="2" ry="2" />
+<text  x="961.31" y="303.5" ></text>
+</g>
+<g >
+<title>fmt::v12::basic_appender&lt;char&gt; fmt::v12::detail::copy&lt;char, char const*, fmt::v12::basic_appender&lt;char&gt;, 0&gt; (29,535,144 samples, 0.38%)</title><rect x="879.0" y="245" width="4.6" height="15.0" fill="rgb(213,38,9)" rx="2" ry="2" />
+<text  x="882.03" y="255.5" ></text>
+</g>
+<g >
+<title>resolve_map (1,388,530 samples, 0.02%)</title><rect x="1188.6" y="277" width="0.2" height="15.0" fill="rgb(234,135,32)" rx="2" ry="2" />
+<text  x="1191.55" y="287.5" ></text>
+</g>
+<g >
+<title>fmt::v12::detail::format_handler&lt;char&gt;::on_replacement_field (399,898,166 samples, 5.20%)</title><rect x="325.7" y="261" width="61.4" height="15.0" fill="rgb(207,13,3)" rx="2" ry="2" />
+<text  x="328.75" y="271.5" >fmt::v..</text>
+</g>
+<g >
+<title>fmt::v12::basic_format_arg&lt;fmt::v12::context&gt;::format_custom (25,007,779 samples, 0.33%)</title><rect x="1043.4" y="245" width="3.8" height="15.0" fill="rgb(223,84,20)" rx="2" ry="2" />
+<text  x="1046.38" y="255.5" ></text>
+</g>
+<g >
+<title>fmt::v12::basic_appender&lt;char&gt; fmt::v12::detail::copy_noinline&lt;char, char const*, fmt::v12::basic_appender&lt;char&gt; &gt; (182,222,368 samples, 2.37%)</title><rect x="732.5" y="69" width="28.0" height="15.0" fill="rgb(238,154,36)" rx="2" ry="2" />
+<text  x="735.51" y="79.5" >f..</text>
+</g>
+<g >
+<title>int fmt::v12::detail::format_float&lt;double&gt; (231,274,593 samples, 3.01%)</title><rect x="839.7" y="197" width="35.5" height="15.0" fill="rgb(210,23,5)" rx="2" ry="2" />
+<text  x="842.71" y="207.5" >int..</text>
+</g>
+<g >
+<title>fmt::v12::detail::buffer&lt;char&gt;::push_back (26,035,232 samples, 0.34%)</title><rect x="175.4" y="101" width="4.0" height="15.0" fill="rgb(245,185,44)" rx="2" ry="2" />
+<text  x="178.42" y="111.5" ></text>
+</g>
+<g >
+<title>elf_dynamic_do_Rela (1,388,530 samples, 0.02%)</title><rect x="1188.6" y="309" width="0.2" height="15.0" fill="rgb(207,10,2)" rx="2" ry="2" />
+<text  x="1191.55" y="319.5" ></text>
+</g>
+<g >
+<title>void fmt::v12::detail::buffer&lt;char&gt;::append&lt;char&gt; (5,673,335 samples, 0.07%)</title><rect x="957.4" y="261" width="0.9" height="15.0" fill="rgb(238,152,36)" rx="2" ry="2" />
+<text  x="960.44" y="271.5" ></text>
+</g>
+<g >
+<title>fmt::v12::basic_appender&lt;char&gt; fmt::v12::detail::reserve&lt;char&gt; (1,140,197 samples, 0.01%)</title><rect x="727.4" y="117" width="0.1" height="15.0" fill="rgb(215,48,11)" rx="2" ry="2" />
+<text  x="730.37" y="127.5" ></text>
+</g>
+<g >
+<title>fmt::v12::basic_format_args&lt;fmt::v12::context&gt;::get (2,305,467 samples, 0.03%)</title><rect x="875.4" y="229" width="0.3" height="15.0" fill="rgb(228,106,25)" rx="2" ry="2" />
+<text  x="878.37" y="239.5" ></text>
+</g>
+<g >
+<title>fmt::v12::basic_memory_buffer&lt;char, 500ul, fmt::v12::detail::allocator&lt;char&gt; &gt;::deallocate (38,595,720 samples, 0.50%)</title><rect x="940.9" y="293" width="5.9" height="15.0" fill="rgb(206,7,1)" rx="2" ry="2" />
+<text  x="943.90" y="303.5" ></text>
+</g>
+<g >
+<title>fmt::v12::detail::buffer&lt;char&gt;::try_reserve (6,813,152 samples, 0.09%)</title><rect x="360.3" y="181" width="1.1" height="15.0" fill="rgb(227,101,24)" rx="2" ry="2" />
+<text  x="363.31" y="191.5" ></text>
+</g>
+<g >
+<title>unsigned long fmt::v12::min_of&lt;unsigned long&gt; (1,166,023 samples, 0.02%)</title><rect x="862.0" y="165" width="0.1" height="15.0" fill="rgb(254,227,54)" rx="2" ry="2" />
+<text  x="864.97" y="175.5" ></text>
+</g>
+<g >
+<title>void std::__cxx11::basic_string&lt;char, std::char_traits&lt;char&gt;, std::allocator&lt;char&gt; &gt;::_M_construct&lt;char const*&gt; (221,055,875 samples, 2.87%)</title><rect x="1075.2" y="277" width="33.9" height="15.0" fill="rgb(254,226,54)" rx="2" ry="2" />
+<text  x="1078.18" y="287.5" >vo..</text>
+</g>
+<g >
+<title>fmt::v12::detail::value&lt;fmt::v12::context&gt;::value (3,386,180 samples, 0.04%)</title><rect x="519.6" y="325" width="0.5" height="15.0" fill="rgb(217,57,13)" rx="2" ry="2" />
+<text  x="522.55" y="335.5" ></text>
+</g>
+<g >
+<title>std::__cxx11::basic_string&lt;char, std::char_traits&lt;char&gt;, std::allocator&lt;char&gt; &gt;::_S_allocate (132,584,032 samples, 1.72%)</title><rect x="887.2" y="245" width="20.4" height="15.0" fill="rgb(209,19,4)" rx="2" ry="2" />
+<text  x="890.22" y="255.5" ></text>
+</g>
+<g >
+<title>void fmt::v12::detail::buffer&lt;char&gt;::append&lt;char&gt; (60,028,232 samples, 0.78%)</title><rect x="1064.1" y="229" width="9.2" height="15.0" fill="rgb(238,152,36)" rx="2" ry="2" />
+<text  x="1067.05" y="239.5" ></text>
+</g>
+<g >
+<title>std::__cxx11::basic_string&lt;char, std::char_traits&lt;char&gt;, std::allocator&lt;char&gt; &gt;::basic_string (227,871,674 samples, 2.96%)</title><rect x="1074.1" y="293" width="35.0" height="15.0" fill="rgb(212,35,8)" rx="2" ry="2" />
+<text  x="1077.14" y="303.5" >st..</text>
+</g>
+<g >
+<title>_dl_start (1,759,238 samples, 0.02%)</title><rect x="1188.5" y="389" width="0.3" height="15.0" fill="rgb(237,151,36)" rx="2" ry="2" />
+<text  x="1191.51" y="399.5" ></text>
+</g>
+<g >
+<title>std::__cxx11::basic_string&lt;char, std::char_traits&lt;char&gt;, std::allocator&lt;char&gt; &gt;::_S_copy_chars (96,192,419 samples, 1.25%)</title><rect x="907.7" y="261" width="14.8" height="15.0" fill="rgb(223,85,20)" rx="2" ry="2" />
+<text  x="910.74" y="271.5" ></text>
+</g>
+<g >
+<title>std::allocator&lt;char&gt;::allocate (80,341,026 samples, 1.04%)</title><rect x="451.1" y="213" width="12.3" height="15.0" fill="rgb(249,203,48)" rx="2" ry="2" />
+<text  x="454.07" y="223.5" ></text>
+</g>
+<g >
+<title>std::__cxx11::basic_string&lt;char, std::char_traits&lt;char&gt;, std::allocator&lt;char&gt; &gt;::_M_set_length (1,130,828 samples, 0.01%)</title><rect x="1075.4" y="261" width="0.1" height="15.0" fill="rgb(249,204,48)" rx="2" ry="2" />
+<text  x="1078.35" y="271.5" ></text>
+</g>
+<g >
+<title>fmt::v12::basic_format_args&lt;fmt::v12::context&gt;::get (76,005,866 samples, 0.99%)</title><rect x="314.1" y="229" width="11.6" height="15.0" fill="rgb(228,106,25)" rx="2" ry="2" />
+<text  x="317.08" y="239.5" ></text>
+</g>
+<g >
+<title>void std::__cxx11::basic_string&lt;char, std::char_traits&lt;char&gt;, std::allocator&lt;char&gt; &gt;::_M_construct&lt;char const*&gt; (229,915,854 samples, 2.99%)</title><rect x="887.2" y="277" width="35.3" height="15.0" fill="rgb(254,226,54)" rx="2" ry="2" />
+<text  x="890.22" y="287.5" >vo..</text>
+</g>
+<g >
+<title>fmt::v12::detail::utf8_decode (378,011,221 samples, 4.92%)</title><rect x="207.7" y="133" width="58.0" height="15.0" fill="rgb(208,13,3)" rx="2" ry="2" />
+<text  x="210.72" y="143.5" >fmt::v..</text>
+</g>
+<g >
+<title>fmt::v12::detail::digit_grouping&lt;char&gt;::~digit_grouping (7,924,021 samples, 0.10%)</title><rect x="828.1" y="149" width="1.2" height="15.0" fill="rgb(208,15,3)" rx="2" ry="2" />
+<text  x="831.13" y="159.5" ></text>
+</g>
+<g >
+<title>tcache_put (46,447,958 samples, 0.60%)</title><rect x="1171.6" y="213" width="7.2" height="15.0" fill="rgb(241,169,40)" rx="2" ry="2" />
+<text  x="1174.65" y="223.5" ></text>
+</g>
+<g >
+<title>fmt::v12::detail::format_handler&lt;char&gt;::on_arg_id (30,623,476 samples, 0.40%)</title><rect x="66.5" y="261" width="4.7" height="15.0" fill="rgb(233,132,31)" rx="2" ry="2" />
+<text  x="69.53" y="271.5" ></text>
+</g>
+<g >
+<title>fmt::v12::detail::format_float&lt;double&gt; (62,333,158 samples, 0.81%)</title><rect x="865.5" y="181" width="9.5" height="15.0" fill="rgb(205,0,0)" rx="2" ry="2" />
+<text  x="868.46" y="191.5" ></text>
+</g>
+<g >
+<title>std::__cxx11::basic_string&lt;char, std::char_traits&lt;char&gt;, std::allocator&lt;char&gt; &gt; fmt::v12::format&lt;double&gt; (2,627,232,181 samples, 34.16%)</title><rect x="519.4" y="341" width="403.1" height="15.0" fill="rgb(226,100,24)" rx="2" ry="2" />
+<text  x="522.38" y="351.5" >std::__cxx11::basic_string&lt;char, std::char_traits&lt;char..</text>
+</g>
+<g >
+<title>void fmt::v12::detail::arg_formatter&lt;char&gt;::operator (1,748,931,389 samples, 22.74%)</title><rect x="606.8" y="229" width="268.4" height="15.0" fill="rgb(247,194,46)" rx="2" ry="2" />
+<text  x="609.85" y="239.5" >void fmt::v12::detail::arg_formatte..</text>
+</g>
+<g >
+<title>std::__cxx11::basic_string&lt;char, std::char_traits&lt;char&gt;, std::allocator&lt;char&gt; &gt; fmt::v12::to_string&lt;500ul&gt; (452,000,554 samples, 5.88%)</title><rect x="450.0" y="309" width="69.4" height="15.0" fill="rgb(242,172,41)" rx="2" ry="2" />
+<text  x="453.02" y="319.5" >std::__..</text>
+</g>
+<g >
+<title>fmt::v12::detail::vformat_to (2,271,722,864 samples, 29.54%)</title><rect x="535.0" y="309" width="348.6" height="15.0" fill="rgb(216,51,12)" rx="2" ry="2" />
+<text  x="537.99" y="319.5" >fmt::v12::detail::vformat_to</text>
+</g>
+<g >
+<title>fmt::v12::detail::adjust_precision (1,137,403 samples, 0.01%)</title><rect x="861.4" y="181" width="0.2" height="15.0" fill="rgb(252,220,52)" rx="2" ry="2" />
+<text  x="864.45" y="191.5" ></text>
+</g>
+<g >
+<title>int fmt::v12::detail::format_float&lt;double&gt; (24,879,871 samples, 0.32%)</title><rect x="871.0" y="149" width="3.9" height="15.0" fill="rgb(210,23,5)" rx="2" ry="2" />
+<text  x="874.04" y="159.5" ></text>
+</g>
+<g >
+<title>tcache_get (46,435,710 samples, 0.60%)</title><rect x="900.4" y="149" width="7.2" height="15.0" fill="rgb(253,222,53)" rx="2" ry="2" />
+<text  x="903.44" y="159.5" ></text>
+</g>
+<g >
+<title>fmt::v12::basic_appender&lt;char&gt; fmt::v12::detail::copy&lt;char, char const*, fmt::v12::basic_appender&lt;char&gt;, 0&gt; (301,049,243 samples, 3.91%)</title><rect x="403.8" y="245" width="46.2" height="15.0" fill="rgb(213,38,9)" rx="2" ry="2" />
+<text  x="406.83" y="255.5" >fmt:..</text>
+</g>
+<g >
+<title>fmt::v12::detail::parse_dynamic_spec_result&lt;char&gt; fmt::v12::detail::parse_dynamic_spec&lt;char&gt; (16,979,632 samples, 0.22%)</title><rect x="598.7" y="213" width="2.6" height="15.0" fill="rgb(249,205,49)" rx="2" ry="2" />
+<text  x="601.67" y="223.5" ></text>
+</g>
+<g >
+<title>fmt::v12::basic_appender&lt;char&gt; fmt::v12::detail::write_int&lt;char, fmt::v12::basic_appender&lt;char&gt;, unsigned int&gt; (150,113,458 samples, 1.95%)</title><rect x="1018.8" y="181" width="23.0" height="15.0" fill="rgb(243,178,42)" rx="2" ry="2" />
+<text  x="1021.81" y="191.5" >f..</text>
+</g>
+<g >
+<title>fmt::v12::detail::vformat_to (824,018,990 samples, 10.71%)</title><rect x="946.8" y="309" width="126.5" height="15.0" fill="rgb(216,51,12)" rx="2" ry="2" />
+<text  x="949.83" y="319.5" >fmt::v12::detai..</text>
+</g>
+<g >
+<title>fmt::v12::vformat[abi:cxx11] (2,622,714,674 samples, 34.10%)</title><rect x="520.1" y="325" width="402.4" height="15.0" fill="rgb(221,76,18)" rx="2" ry="2" />
+<text  x="523.07" y="335.5" >fmt::v12::vformat[abi:cxx11]</text>
+</g>
+<g >
+<title>fmt::v12::basic_memory_buffer&lt;char, 500ul, fmt::v12::detail::allocator&lt;char&gt; &gt;::~basic_memory_buffer (38,595,720 samples, 0.50%)</title><rect x="940.9" y="309" width="5.9" height="15.0" fill="rgb(208,18,4)" rx="2" ry="2" />
+<text  x="943.90" y="319.5" ></text>
+</g>
+<g >
+<title>int fmt::v12::max_of&lt;int&gt; (28,354,101 samples, 0.37%)</title><rect x="829.3" y="149" width="4.4" height="15.0" fill="rgb(233,132,31)" rx="2" ry="2" />
+<text  x="832.34" y="159.5" ></text>
+</g>
+<g >
+<title>fmt::v12::detail::dragonbox::floor_log10_pow2 (2,258,609 samples, 0.03%)</title><rect x="862.1" y="181" width="0.4" height="15.0" fill="rgb(230,118,28)" rx="2" ry="2" />
+<text  x="865.15" y="191.5" ></text>
+</g>
+<g >
+<title>fmt::v12::basic_specs::align (3,415,260 samples, 0.04%)</title><rect x="727.5" y="117" width="0.6" height="15.0" fill="rgb(237,149,35)" rx="2" ry="2" />
+<text  x="730.55" y="127.5" ></text>
+</g>
+<g >
+<title>fmt::v12::basic_appender&lt;char&gt; fmt::v12::detail::write&lt;char, fmt::v12::basic_appender&lt;char&gt;, int, 0&gt; (196,052,358 samples, 2.55%)</title><rect x="346.2" y="213" width="30.1" height="15.0" fill="rgb(213,38,9)" rx="2" ry="2" />
+<text  x="349.23" y="223.5" >fm..</text>
+</g>
+<g >
+<title>char* fmt::v12::detail::format_decimal&lt;char, unsigned int&gt; (4,559,957 samples, 0.06%)</title><rect x="355.4" y="197" width="0.7" height="15.0" fill="rgb(237,149,35)" rx="2" ry="2" />
+<text  x="358.43" y="207.5" ></text>
+</g>
+<g >
+<title>void fmt::v12::detail::write2digits&lt;char&gt; (28,325,276 samples, 0.37%)</title><rect x="870.7" y="165" width="4.3" height="15.0" fill="rgb(209,21,5)" rx="2" ry="2" />
+<text  x="873.68" y="175.5" ></text>
+</g>
+<g >
+<title>checked_request2size (5,685,406 samples, 0.07%)</title><rect x="899.6" y="149" width="0.8" height="15.0" fill="rgb(252,219,52)" rx="2" ry="2" />
+<text  x="902.56" y="159.5" ></text>
+</g>
+<g >
+<title>std::__cxx11::basic_string&lt;char, std::char_traits&lt;char&gt;, std::allocator&lt;char&gt; &gt;::_M_dispose (4,530,558 samples, 0.06%)</title><rect x="828.6" y="117" width="0.7" height="15.0" fill="rgb(251,215,51)" rx="2" ry="2" />
+<text  x="831.65" y="127.5" ></text>
+</g>
+<g >
+<title>tcache_get_n (26,058,651 samples, 0.34%)</title><rect x="459.4" y="133" width="4.0" height="15.0" fill="rgb(229,110,26)" rx="2" ry="2" />
+<text  x="462.40" y="143.5" ></text>
+</g>
+<g >
+<title>std::__cxx11::basic_string&lt;char, std::char_traits&lt;char&gt;, std::allocator&lt;char&gt; &gt;::_M_create (80,341,026 samples, 1.04%)</title><rect x="451.1" y="261" width="12.3" height="15.0" fill="rgb(248,198,47)" rx="2" ry="2" />
+<text  x="454.07" y="271.5" ></text>
+</g>
+<g >
+<title>fmt::v12::detail::dragonbox::umul192_upper128 (17,078,372 samples, 0.22%)</title><rect x="862.8" y="181" width="2.7" height="15.0" fill="rgb(246,190,45)" rx="2" ry="2" />
+<text  x="865.84" y="191.5" ></text>
+</g>
+<g >
+<title>operator new (62,193,365 samples, 0.81%)</title><rect x="453.9" y="181" width="9.5" height="15.0" fill="rgb(216,51,12)" rx="2" ry="2" />
+<text  x="456.85" y="191.5" ></text>
+</g>
+<g >
+<title>std::__cxx11::basic_string&lt;char, std::char_traits&lt;char&gt;, std::allocator&lt;char&gt; &gt;::_M_is_local (4,530,558 samples, 0.06%)</title><rect x="828.6" y="101" width="0.7" height="15.0" fill="rgb(241,168,40)" rx="2" ry="2" />
+<text  x="831.65" y="111.5" ></text>
+</g>
+<g >
+<title>fmt::v12::basic_specs::dynamic (1,137,144 samples, 0.01%)</title><rect x="875.2" y="245" width="0.2" height="15.0" fill="rgb(229,111,26)" rx="2" ry="2" />
+<text  x="878.20" y="255.5" ></text>
+</g>
+<g >
+<title>fmt::v12::basic_format_arg&lt;fmt::v12::context&gt;::basic_format_arg (10,178,641 samples, 0.13%)</title><rect x="383.5" y="213" width="1.5" height="15.0" fill="rgb(219,67,16)" rx="2" ry="2" />
+<text  x="386.46" y="223.5" ></text>
+</g>
+<g >
+<title>std::__cxx11::basic_string&lt;char, std::char_traits&lt;char&gt;, std::allocator&lt;char&gt; &gt;::_M_dispose (517,566,819 samples, 6.73%)</title><rect x="1109.1" y="325" width="79.4" height="15.0" fill="rgb(251,215,51)" rx="2" ry="2" />
+<text  x="1112.10" y="335.5" >std::__cx..</text>
+</g>
+<g >
+<title>void fmt::v12::detail::default_arg_formatter&lt;char&gt;::operator (196,052,358 samples, 2.55%)</title><rect x="346.2" y="229" width="30.1" height="15.0" fill="rgb(246,191,45)" rx="2" ry="2" />
+<text  x="349.23" y="239.5" >vo..</text>
+</g>
+<g >
+<title>fmt::v12::basic_appender&lt;char&gt; fmt::v12::detail::copy_noinline&lt;char, char const*, fmt::v12::basic_appender&lt;char&gt; &gt; (19,295,422 samples, 0.25%)</title><rect x="955.3" y="293" width="3.0" height="15.0" fill="rgb(238,154,36)" rx="2" ry="2" />
+<text  x="958.35" y="303.5" ></text>
+</g>
+<g >
+<title>fmt::v12::detail::buffer&lt;char&gt;::try_reserve (1,140,021 samples, 0.01%)</title><rect x="179.2" y="85" width="0.2" height="15.0" fill="rgb(227,101,24)" rx="2" ry="2" />
+<text  x="182.23" y="95.5" ></text>
+</g>
+<g >
+<title>fmt::v12::context::context (5,561,488 samples, 0.07%)</title><rect x="551.4" y="293" width="0.9" height="15.0" fill="rgb(214,42,10)" rx="2" ry="2" />
+<text  x="554.41" y="303.5" ></text>
+</g>
+<g >
+<title>fmt::v12::basic_memory_buffer&lt;char, 500ul, fmt::v12::detail::allocator&lt;char&gt; &gt;::basic_memory_buffer (21,635,993 samples, 0.28%)</title><rect x="35.9" y="309" width="3.3" height="15.0" fill="rgb(222,82,19)" rx="2" ry="2" />
+<text  x="38.91" y="319.5" ></text>
+</g>
+<g >
+<title>fmt::v12::basic_appender&lt;char&gt; fmt::v12::detail::write_padded&lt;char,  (500,319,586 samples, 6.51%)</title><rect x="725.3" y="133" width="76.8" height="15.0" fill="rgb(220,73,17)" rx="2" ry="2" />
+<text  x="728.29" y="143.5" >fmt::v12..</text>
+</g>
+<g >
+<title>fmt::v12::detail::format_handler&lt;char&gt;::on_text (79,264,523 samples, 1.03%)</title><rect x="1061.1" y="277" width="12.2" height="15.0" fill="rgb(223,86,20)" rx="2" ry="2" />
+<text  x="1064.10" y="287.5" ></text>
+</g>
+<g >
+<title>std::__cxx11::basic_string&lt;char, std::char_traits&lt;char&gt;, std::allocator&lt;char&gt; &gt;::_Alloc_hider::_Alloc_hider (19,261,947 samples, 0.25%)</title><rect x="823.4" y="117" width="3.0" height="15.0" fill="rgb(212,32,7)" rx="2" ry="2" />
+<text  x="826.43" y="127.5" ></text>
+</g>
+<g >
+<title>fmt::v12::vformat[abi:cxx11] (1,216,144,515 samples, 15.81%)</title><rect x="922.5" y="325" width="186.6" height="15.0" fill="rgb(221,76,18)" rx="2" ry="2" />
+<text  x="925.50" y="335.5" >fmt::v12::vformat[abi:cx..</text>
+</g>
+<g >
+<title>fmt::v12::basic_appender&lt;char&gt; fmt::v12::detail::copy_noinline&lt;char, char const*, fmt::v12::basic_appender&lt;char&gt; &gt; (15,897,401 samples, 0.21%)</title><rect x="549.0" y="293" width="2.4" height="15.0" fill="rgb(238,154,36)" rx="2" ry="2" />
+<text  x="551.97" y="303.5" ></text>
+</g>
+<g >
+<title>fmt::v12::basic_appender&lt;char&gt; fmt::v12::detail::write&lt;char, fmt::v12::basic_appender&lt;char&gt;, double, 0&gt; (1,459,827,049 samples, 18.98%)</title><rect x="651.2" y="213" width="224.0" height="15.0" fill="rgb(249,205,49)" rx="2" ry="2" />
+<text  x="654.21" y="223.5" >fmt::v12::basic_appender&lt;char..</text>
+</g>
+<g >
+<title>std::__cxx11::basic_string&lt;char, std::char_traits&lt;char&gt;, std::allocator&lt;char&gt; &gt;::_S_copy (218,813,254 samples, 2.85%)</title><rect x="1075.5" y="245" width="33.6" height="15.0" fill="rgb(254,227,54)" rx="2" ry="2" />
+<text  x="1078.53" y="255.5" >st..</text>
+</g>
+<g >
+<title>fmt::v12::context::arg (60,142,992 samples, 0.78%)</title><rect x="376.3" y="245" width="9.2" height="15.0" fill="rgb(229,112,26)" rx="2" ry="2" />
+<text  x="379.31" y="255.5" ></text>
+</g>
+<g >
+<title>char const* fmt::v12::detail::parse_replacement_field&lt;char, fmt::v12::detail::format_handler&lt;char&gt;&amp;&gt; (2,125,479,719 samples, 27.64%)</title><rect x="61.0" y="277" width="326.1" height="15.0" fill="rgb(223,82,19)" rx="2" ry="2" />
+<text  x="63.97" y="287.5" >char const* fmt::v12::detail::parse_replacem..</text>
+</g>
+<g >
+<title>fmt::v12::basic_appender&lt;char&gt; fmt::v12::detail::write_padded&lt;char,  (228,346,901 samples, 2.97%)</title><rect x="150.6" y="165" width="35.0" height="15.0" fill="rgb(220,73,17)" rx="2" ry="2" />
+<text  x="153.61" y="175.5" >fm..</text>
+</g>
+<g >
+<title>fmt::v12::detail::buffer&lt;char&gt;::data (1,138,185 samples, 0.01%)</title><rect x="39.2" y="277" width="0.2" height="15.0" fill="rgb(245,184,44)" rx="2" ry="2" />
+<text  x="42.23" y="287.5" ></text>
+</g>
+<g >
+<title>std::__cxx11::basic_string&lt;char, std::char_traits&lt;char&gt;, std::allocator&lt;char&gt; &gt;::_S_copy (361,450,775 samples, 4.70%)</title><rect x="463.9" y="245" width="55.5" height="15.0" fill="rgb(254,227,54)" rx="2" ry="2" />
+<text  x="466.92" y="255.5" >std::..</text>
+</g>
+<g >
+<title>fmt::v12::basic_specs::fill_size (1,127,802 samples, 0.01%)</title><rect x="179.4" y="133" width="0.2" height="15.0" fill="rgb(208,14,3)" rx="2" ry="2" />
+<text  x="182.41" y="143.5" ></text>
+</g>
+<g >
+<title>int fmt::v12::detail::parse_nonnegative_int&lt;char&gt; (12,526,802 samples, 0.16%)</title><rect x="1004.4" y="197" width="1.9" height="15.0" fill="rgb(210,25,6)" rx="2" ry="2" />
+<text  x="1007.39" y="207.5" ></text>
+</g>
+<g >
+<title>std::__new_allocator&lt;char&gt;::allocate (132,584,032 samples, 1.72%)</title><rect x="887.2" y="197" width="20.4" height="15.0" fill="rgb(226,98,23)" rx="2" ry="2" />
+<text  x="890.22" y="207.5" ></text>
+</g>
+<g >
+<title>fmt::v12::parse_context&lt;char&gt;::parse_context (36,360,085 samples, 0.47%)</title><rect x="552.3" y="293" width="5.5" height="15.0" fill="rgb(210,26,6)" rx="2" ry="2" />
+<text  x="555.27" y="303.5" ></text>
+</g>
+<g >
+<title>fmt::v12::detail::format_handler&lt;char&gt;::on_format_specs (624,728,124 samples, 8.12%)</title><rect x="965.2" y="261" width="95.9" height="15.0" fill="rgb(242,173,41)" rx="2" ry="2" />
+<text  x="968.24" y="271.5" >fmt::v12::d..</text>
+</g>
+<g >
+<title>fmt::v12::detail::write&lt;char, fmt::v12::basic_appender&lt;char&gt;, 0&gt; (220,940,744 samples, 2.87%)</title><rect x="265.7" y="133" width="33.9" height="15.0" fill="rgb(230,116,27)" rx="2" ry="2" />
+<text  x="268.73" y="143.5" >fm..</text>
+</g>
+<g >
+<title>void fmt::v12::detail::arg_formatter&lt;char&gt;::operator (1,031,271,011 samples, 13.41%)</title><rect x="143.3" y="229" width="158.2" height="15.0" fill="rgb(247,194,46)" rx="2" ry="2" />
+<text  x="146.30" y="239.5" >void fmt::v12::detai..</text>
+</g>
+<g >
+<title>fmt::v12::detail::buffer&lt;char&gt;::buffer (11,331,301 samples, 0.15%)</title><rect x="834.6" y="181" width="1.7" height="15.0" fill="rgb(247,197,47)" rx="2" ry="2" />
+<text  x="837.56" y="191.5" ></text>
+</g>
+<g >
+<title>void std::__cxx11::basic_string&lt;char, std::char_traits&lt;char&gt;, std::allocator&lt;char&gt; &gt;::_M_construct&lt;char const*&gt; (450,871,479 samples, 5.86%)</title><rect x="450.2" y="277" width="69.2" height="15.0" fill="rgb(254,226,54)" rx="2" ry="2" />
+<text  x="453.20" y="287.5" >void st..</text>
+</g>
+<g >
+<title>fmt::v12::detail::parse_format_specs&lt;char&gt; (35,168,289 samples, 0.46%)</title><rect x="601.3" y="229" width="5.4" height="15.0" fill="rgb(235,140,33)" rx="2" ry="2" />
+<text  x="604.28" y="239.5" ></text>
+</g>
+<g >
+<title>fmt::v12::basic_appender&lt;char&gt; fmt::v12::detail::write_padded&lt;char,  (119,569,742 samples, 1.55%)</title><rect x="1023.5" y="149" width="18.3" height="15.0" fill="rgb(220,73,17)" rx="2" ry="2" />
+<text  x="1026.50" y="159.5" ></text>
+</g>
+<g >
+<title>fmt::v12::basic_appender&lt;char&gt; fmt::v12::detail::fill&lt;char, fmt::v12::basic_appender&lt;char&gt; &gt; (188,827,350 samples, 2.46%)</title><rect x="150.6" y="149" width="29.0" height="15.0" fill="rgb(239,159,38)" rx="2" ry="2" />
+<text  x="153.61" y="159.5" >fm..</text>
+</g>
+<g >
+<title>fmt::v12::context::locale (1,104,983 samples, 0.01%)</title><rect x="875.7" y="245" width="0.2" height="15.0" fill="rgb(226,100,24)" rx="2" ry="2" />
+<text  x="878.73" y="255.5" ></text>
+</g>
+<g >
+<title>fmt::v12::detail::buffer&lt;char&gt;::set (21,635,993 samples, 0.28%)</title><rect x="35.9" y="293" width="3.3" height="15.0" fill="rgb(248,201,48)" rx="2" ry="2" />
+<text  x="38.91" y="303.5" ></text>
+</g>
+<g >
+<title>decltype  (317,057,958 samples, 4.12%)</title><rect x="327.7" y="245" width="48.6" height="15.0" fill="rgb(214,42,10)" rx="2" ry="2" />
+<text  x="330.66" y="255.5" >decl..</text>
+</g>
+<g >
+<title>std::__cxx11::basic_string&lt;char, std::char_traits&lt;char&gt;, std::allocator&lt;char&gt; &gt;::~basic_string (7,924,021 samples, 0.10%)</title><rect x="828.1" y="133" width="1.2" height="15.0" fill="rgb(248,201,48)" rx="2" ry="2" />
+<text  x="831.13" y="143.5" ></text>
+</g>
+<g >
+<title>fmt::v12::detail::buffer&lt;char&gt;::try_reserve (65,838,169 samples, 0.86%)</title><rect x="792.0" y="37" width="10.1" height="15.0" fill="rgb(227,101,24)" rx="2" ry="2" />
+<text  x="794.95" y="47.5" ></text>
+</g>
+<g >
+<title>fmt::v12::basic_appender&lt;char&gt; fmt::v12::detail::reserve&lt;char&gt; (2,276,310 samples, 0.03%)</title><rect x="1023.7" y="133" width="0.3" height="15.0" fill="rgb(215,48,11)" rx="2" ry="2" />
+<text  x="1026.67" y="143.5" ></text>
+</g>
+<g >
+<title>fmt::v12::detail::buffer&lt;char&gt;::size (2,280,353 samples, 0.03%)</title><rect x="360.0" y="181" width="0.3" height="15.0" fill="rgb(231,123,29)" rx="2" ry="2" />
+<text  x="362.96" y="191.5" ></text>
+</g>
+<g >
+<title>void fmt::v12::detail::for_each_codepoint&lt;fmt::v12::detail::write&lt;char, fmt::v12::basic_appender&lt;char&gt;, 0&gt; (742,837,753 samples, 9.66%)</title><rect x="185.6" y="165" width="114.0" height="15.0" fill="rgb(205,4,0)" rx="2" ry="2" />
+<text  x="188.65" y="175.5" >void fmt::v12:..</text>
+</g>
+<g >
+<title>all (7,690,379,400 samples, 100%)</title><rect x="10.0" y="437" width="1180.0" height="15.0" fill="rgb(213,39,9)" rx="2" ry="2" />
+<text  x="13.00" y="447.5" ></text>
+</g>
+<g >
+<title>decltype  (195,214,088 samples, 2.54%)</title><rect x="1013.4" y="245" width="30.0" height="15.0" fill="rgb(214,42,10)" rx="2" ry="2" />
+<text  x="1016.43" y="255.5" >de..</text>
+</g>
+<g >
+<title>fmt::v12::basic_appender&lt;char&gt; fmt::v12::detail::write_float&lt;char, fmt::v12::basic_appender&lt;char&gt;, fmt::v12::detail::big_decimal_fp&gt; (977,326,987 samples, 12.71%)</title><rect x="684.6" y="197" width="150.0" height="15.0" fill="rgb(245,187,44)" rx="2" ry="2" />
+<text  x="687.60" y="207.5" >fmt::v12::basic_app..</text>
+</g>
+<g >
+<title>_start (7,682,457,719 samples, 99.90%)</title><rect x="10.0" y="405" width="1178.8" height="15.0" fill="rgb(245,185,44)" rx="2" ry="2" />
+<text  x="13.00" y="415.5" >_start</text>
+</g>
+<g >
+<title>fmt::v12::basic_memory_buffer&lt;char, 500ul, fmt::v12::detail::allocator&lt;char&gt; &gt;::basic_memory_buffer (37,376,066 samples, 0.49%)</title><rect x="529.3" y="309" width="5.7" height="15.0" fill="rgb(222,82,19)" rx="2" ry="2" />
+<text  x="532.26" y="319.5" ></text>
+</g>
+<g >
+<title>std::__cxx11::basic_string&lt;char, std::char_traits&lt;char&gt;, std::allocator&lt;char&gt; &gt;::_S_copy (96,192,419 samples, 1.25%)</title><rect x="907.7" y="229" width="14.8" height="15.0" fill="rgb(254,227,54)" rx="2" ry="2" />
+<text  x="910.74" y="239.5" ></text>
+</g>
+<g >
+<title>_dl_sysdep_start (1,756,501 samples, 0.02%)</title><rect x="1188.5" y="357" width="0.3" height="15.0" fill="rgb(234,137,32)" rx="2" ry="2" />
+<text  x="1191.51" y="367.5" ></text>
+</g>
+<g >
+<title>__memcpy_avx512_unaligned_erms (202,880,874 samples, 2.64%)</title><rect x="1077.6" y="197" width="31.2" height="15.0" fill="rgb(214,43,10)" rx="2" ry="2" />
+<text  x="1080.62" y="207.5" >__..</text>
+</g>
+<g >
+<title>fmt::v12::detail::parse_dynamic_spec_result&lt;char&gt; fmt::v12::detail::parse_dynamic_spec&lt;char&gt; (24,794,273 samples, 0.32%)</title><rect x="126.8" y="213" width="3.8" height="15.0" fill="rgb(249,205,49)" rx="2" ry="2" />
+<text  x="129.80" y="223.5" ></text>
+</g>
+<g >
+<title>std::__cxx11::basic_string&lt;char, std::char_traits&lt;char&gt;, std::allocator&lt;char&gt; &gt;::_M_data (3,411,810 samples, 0.04%)</title><rect x="463.4" y="261" width="0.5" height="15.0" fill="rgb(206,6,1)" rx="2" ry="2" />
+<text  x="466.39" y="271.5" ></text>
+</g>
+<g >
+<title>fmt::v12::basic_appender&lt;char&gt; fmt::v12::detail::write_significand&lt;fmt::v12::basic_appender&lt;char&gt;, char&gt; (481,043,861 samples, 6.26%)</title><rect x="728.2" y="85" width="73.9" height="15.0" fill="rgb(244,182,43)" rx="2" ry="2" />
+<text  x="731.24" y="95.5" >fmt::v12..</text>
+</g>
+<g >
+<title>std::__cxx11::basic_string&lt;char, std::char_traits&lt;char&gt;, std::allocator&lt;char&gt; &gt;::_S_copy (361,450,775 samples, 4.70%)</title><rect x="463.9" y="229" width="55.5" height="15.0" fill="rgb(254,227,54)" rx="2" ry="2" />
+<text  x="466.92" y="239.5" >std::..</text>
+</g>
+<g >
+<title>std::allocator_traits&lt;std::allocator&lt;char&gt; &gt;::allocate (132,584,032 samples, 1.72%)</title><rect x="887.2" y="229" width="20.4" height="15.0" fill="rgb(212,33,8)" rx="2" ry="2" />
+<text  x="890.22" y="239.5" ></text>
+</g>
+<g >
+<title>std::__cxx11::basic_string&lt;char, std::char_traits&lt;char&gt;, std::allocator&lt;char&gt; &gt;::_M_data (1,130,828 samples, 0.01%)</title><rect x="1075.4" y="245" width="0.1" height="15.0" fill="rgb(206,6,1)" rx="2" ry="2" />
+<text  x="1078.35" y="255.5" ></text>
+</g>
+<g >
+<title>std::__cxx11::basic_string&lt;char, std::char_traits&lt;char&gt;, std::allocator&lt;char&gt; &gt;::_S_copy_chars (218,813,254 samples, 2.85%)</title><rect x="1075.5" y="261" width="33.6" height="15.0" fill="rgb(223,85,20)" rx="2" ry="2" />
+<text  x="1078.53" y="271.5" >st..</text>
+</g>
+<g >
+<title>operator delete (58,931,987 samples, 0.77%)</title><rect x="1178.8" y="245" width="9.0" height="15.0" fill="rgb(247,196,46)" rx="2" ry="2" />
+<text  x="1181.77" y="255.5" ></text>
+</g>
+<g >
+<title>fmt::v12::basic_specs::sign (16,584,946 samples, 0.22%)</title><rect x="836.3" y="197" width="2.5" height="15.0" fill="rgb(218,63,15)" rx="2" ry="2" />
+<text  x="839.30" y="207.5" ></text>
+</g>
+<g >
+<title>fmt::v12::basic_specs::type (4,533,248 samples, 0.06%)</title><rect x="833.9" y="165" width="0.7" height="15.0" fill="rgb(209,18,4)" rx="2" ry="2" />
+<text  x="836.86" y="175.5" ></text>
+</g>
+<g >
+<title>std::__cxx11::basic_string&lt;char, std::char_traits&lt;char&gt;, std::allocator&lt;char&gt; &gt;::_M_data (4,530,558 samples, 0.06%)</title><rect x="828.6" y="85" width="0.7" height="15.0" fill="rgb(206,6,1)" rx="2" ry="2" />
+<text  x="831.65" y="95.5" ></text>
+</g>
+<g >
+<title>fmt::v12::detail::format_handler&lt;char&gt;::on_format_specs (1,911,873,239 samples, 24.86%)</title><rect x="582.5" y="261" width="293.4" height="15.0" fill="rgb(242,173,41)" rx="2" ry="2" />
+<text  x="585.54" y="271.5" >fmt::v12::detail::format_handler&lt;char&gt;:..</text>
+</g>
+<g >
+<title>fmt::v12::detail::buffer&lt;char&gt;::buffer (32,846,455 samples, 0.43%)</title><rect x="529.3" y="293" width="5.0" height="15.0" fill="rgb(247,197,47)" rx="2" ry="2" />
+<text  x="532.26" y="303.5" ></text>
+</g>
+<g >
+<title>format_workload (7,690,379,400 samples, 100.00%)</title><rect x="10.0" y="421" width="1180.0" height="15.0" fill="rgb(206,7,1)" rx="2" ry="2" />
+<text  x="13.00" y="431.5" >format_workload</text>
+</g>
+<g >
+<title>fmt::v12::detail::buffer&lt;char&gt;::try_reserve (2,255,914 samples, 0.03%)</title><rect x="861.6" y="165" width="0.4" height="15.0" fill="rgb(227,101,24)" rx="2" ry="2" />
+<text  x="864.62" y="175.5" ></text>
+</g>
+<g >
+<title>fmt::v12::detail::buffer&lt;char&gt;::data (19,297,035 samples, 0.25%)</title><rect x="883.6" y="293" width="2.9" height="15.0" fill="rgb(245,184,44)" rx="2" ry="2" />
+<text  x="886.56" y="303.5" ></text>
+</g>
+<g >
+<title>dl_main (1,735,857 samples, 0.02%)</title><rect x="1188.5" y="341" width="0.3" height="15.0" fill="rgb(236,145,34)" rx="2" ry="2" />
+<text  x="1191.52" y="351.5" ></text>
+</g>
+<g >
+<title>fmt::v12::basic_format_args&lt;fmt::v12::context&gt;::is_packed (2,270,108 samples, 0.03%)</title><rect x="385.0" y="213" width="0.4" height="15.0" fill="rgb(231,120,28)" rx="2" ry="2" />
+<text  x="388.02" y="223.5" ></text>
+</g>
+<g >
+<title>char const* fmt::v12::detail::parse_width&lt;char&gt; (52,235,316 samples, 0.68%)</title><rect x="998.3" y="229" width="8.0" height="15.0" fill="rgb(210,23,5)" rx="2" ry="2" />
+<text  x="1001.30" y="239.5" ></text>
+</g>
+<g >
+<title>int fmt::v12::detail::parse_nonnegative_int&lt;char&gt; (22,772,603 samples, 0.30%)</title><rect x="127.1" y="197" width="3.5" height="15.0" fill="rgb(210,25,6)" rx="2" ry="2" />
+<text  x="130.11" y="207.5" ></text>
+</g>
+<g >
+<title>__GI___libc_malloc (7,921,681 samples, 0.10%)</title><rect x="1188.8" y="389" width="1.2" height="15.0" fill="rgb(219,68,16)" rx="2" ry="2" />
+<text  x="1191.78" y="399.5" ></text>
+</g>
+<g >
+<title>std::__new_allocator&lt;char&gt;::deallocate (513,021,014 samples, 6.67%)</title><rect x="1109.1" y="261" width="78.7" height="15.0" fill="rgb(227,105,25)" rx="2" ry="2" />
+<text  x="1112.10" y="271.5" >std::__ne..</text>
+</g>
+<g >
+<title>fmt::v12::basic_appender&lt;char&gt; fmt::v12::detail::reserve&lt;char&gt; (1,126,525 samples, 0.01%)</title><rect x="179.6" y="149" width="0.2" height="15.0" fill="rgb(215,48,11)" rx="2" ry="2" />
+<text  x="182.58" y="159.5" ></text>
+</g>
+<g >
+<title>fmt::v12::basic_appender&lt;char&gt; fmt::v12::detail::copy_noinline&lt;char, char const*, fmt::v12::basic_appender&lt;char&gt; &gt; (2,258,704 samples, 0.03%)</title><rect x="45.0" y="293" width="0.3" height="15.0" fill="rgb(238,154,36)" rx="2" ry="2" />
+<text  x="47.98" y="303.5" ></text>
+</g>
+<g >
+<title>fmt::v12::parse_context&lt;char&gt;::next_arg_id (30,623,476 samples, 0.40%)</title><rect x="66.5" y="245" width="4.7" height="15.0" fill="rgb(232,124,29)" rx="2" ry="2" />
+<text  x="69.53" y="255.5" ></text>
+</g>
+<g >
+<title>fmt::v12::basic_appender&lt;char&gt; fmt::v12::detail::write_padded&lt;char,  (500,319,586 samples, 6.51%)</title><rect x="725.3" y="149" width="76.8" height="15.0" fill="rgb(220,73,17)" rx="2" ry="2" />
+<text  x="728.29" y="159.5" >fmt::v12..</text>
+</g>
+<g >
+<title>fmt::v12::basic_appender&lt;char&gt;::operator= (271,009,993 samples, 3.52%)</title><rect x="760.5" y="69" width="41.6" height="15.0" fill="rgb(230,116,27)" rx="2" ry="2" />
+<text  x="763.47" y="79.5" >fmt..</text>
+</g>
+<g >
+<title>void fmt::v12::detail::parse_format_string&lt;char, fmt::v12::detail::format_handler&lt;char&gt; &gt; (2,122,764,661 samples, 27.60%)</title><rect x="557.8" y="293" width="325.8" height="15.0" fill="rgb(223,83,19)" rx="2" ry="2" />
+<text  x="560.85" y="303.5" >void fmt::v12::detail::parse_format_string&lt;c..</text>
+</g>
+<g >
+<title>std::__cxx11::basic_string&lt;char, std::char_traits&lt;char&gt;, std::allocator&lt;char&gt; &gt;::_S_copy_chars (361,450,775 samples, 4.70%)</title><rect x="463.9" y="261" width="55.5" height="15.0" fill="rgb(223,85,20)" rx="2" ry="2" />
+<text  x="466.92" y="271.5" >std::..</text>
+</g>
+<g >
+<title>fmt::v12::basic_appender&lt;char&gt; fmt::v12::detail::fill_n&lt;fmt::v12::basic_appender&lt;char&gt;, unsigned int, char&gt; (11,939,760 samples, 0.16%)</title><rect x="1040.0" y="117" width="1.8" height="15.0" fill="rgb(224,88,21)" rx="2" ry="2" />
+<text  x="1043.01" y="127.5" ></text>
+</g>
+<g >
+<title>void fmt::v12::detail::parse_format_string&lt;char, fmt::v12::detail::format_handler&lt;char&gt; &gt; (2,637,521,374 samples, 34.30%)</title><rect x="45.3" y="293" width="404.7" height="15.0" fill="rgb(223,83,19)" rx="2" ry="2" />
+<text  x="48.33" y="303.5" >void fmt::v12::detail::parse_format_string&lt;char, fmt::v..</text>
+</g>
+<g >
+<title>std::__cxx11::basic_string&lt;char, std::char_traits&lt;char&gt;, std::allocator&lt;char&gt; &gt;::_M_data (1,139,403 samples, 0.01%)</title><rect x="907.6" y="261" width="0.1" height="15.0" fill="rgb(206,6,1)" rx="2" ry="2" />
+<text  x="910.56" y="271.5" ></text>
+</g>
+<g >
+<title>fmt::v12::basic_appender&lt;char&gt; fmt::v12::detail::copy_noinline&lt;char, char const*, fmt::v12::basic_appender&lt;char&gt; &gt; (395,383,856 samples, 5.14%)</title><rect x="389.4" y="261" width="60.6" height="15.0" fill="rgb(238,154,36)" rx="2" ry="2" />
+<text  x="392.36" y="271.5" >fmt::v..</text>
+</g>
+<g >
+<title>char* fmt::v12::detail::do_format_decimal&lt;char, unsigned int&gt; (29,425,416 samples, 0.38%)</title><rect x="1019.0" y="165" width="4.5" height="15.0" fill="rgb(210,26,6)" rx="2" ry="2" />
+<text  x="1021.99" y="175.5" ></text>
+</g>
+<g >
+<title>std::__cxx11::basic_string&lt;char, std::char_traits&lt;char&gt;, std::allocator&lt;char&gt; &gt;::_M_local_data (4,524,070 samples, 0.06%)</title><rect x="1074.5" y="277" width="0.7" height="15.0" fill="rgb(214,42,10)" rx="2" ry="2" />
+<text  x="1077.49" y="287.5" ></text>
+</g>
+<g >
+<title>std::__cxx11::basic_string&lt;char, std::char_traits&lt;char&gt;, std::allocator&lt;char&gt; &gt;::_S_copy (218,813,254 samples, 2.85%)</title><rect x="1075.5" y="229" width="33.6" height="15.0" fill="rgb(254,227,54)" rx="2" ry="2" />
+<text  x="1078.53" y="239.5" >st..</text>
+</g>
+<g >
+<title>std::char_traits&lt;char&gt;::copy (361,450,775 samples, 4.70%)</title><rect x="463.9" y="213" width="55.5" height="15.0" fill="rgb(231,121,29)" rx="2" ry="2" />
+<text  x="466.92" y="223.5" >std::..</text>
+</g>
+<g >
+<title>decltype  (1,750,060,034 samples, 22.76%)</title><rect x="606.7" y="245" width="268.5" height="15.0" fill="rgb(214,42,10)" rx="2" ry="2" />
+<text  x="609.67" y="255.5" >decltype </text>
+</g>
+<g >
+<title>__GI___libc_malloc (75,942,350 samples, 0.99%)</title><rect x="895.9" y="165" width="11.7" height="15.0" fill="rgb(219,68,16)" rx="2" ry="2" />
+<text  x="898.91" y="175.5" ></text>
+</g>
+<g >
+<title>fmt::v12::basic_memory_buffer&lt;char, 500ul, fmt::v12::detail::allocator&lt;char&gt; &gt;::basic_memory_buffer (11,331,301 samples, 0.15%)</title><rect x="834.6" y="197" width="1.7" height="15.0" fill="rgb(222,82,19)" rx="2" ry="2" />
+<text  x="837.56" y="207.5" ></text>
+</g>
+<g >
+<title>std::__cxx11::basic_string&lt;char, std::char_traits&lt;char&gt;, std::allocator&lt;char&gt; &gt; fmt::v12::format&lt;char const  (3,225,121,686 samples, 41.94%)</title><rect x="24.5" y="341" width="494.9" height="15.0" fill="rgb(232,125,29)" rx="2" ry="2" />
+<text  x="27.52" y="351.5" >std::__cxx11::basic_string&lt;char, std::char_traits&lt;char&gt;, std::alloc..</text>
+</g>
+<g >
+<title>memcpy@plt (2,260,066 samples, 0.03%)</title><rect x="1108.8" y="197" width="0.3" height="15.0" fill="rgb(224,88,21)" rx="2" ry="2" />
+<text  x="1111.75" y="207.5" ></text>
+</g>
+<g >
+<title>std::allocator&lt;char&gt;::deallocate (513,021,014 samples, 6.67%)</title><rect x="1109.1" y="277" width="78.7" height="15.0" fill="rgb(250,210,50)" rx="2" ry="2" />
+<text  x="1112.10" y="287.5" >std::allo..</text>
+</g>
+<g >
+<title>fmt::v12::basic_appender&lt;char&gt; fmt::v12::detail::do_write_float&lt;char, fmt::v12::detail::digit_grouping&lt;char&gt;, fmt::v12::basic_appender&lt;char&gt;, fmt::v12::detail::big_decimal_fp&gt; (971,662,086 samples, 12.63%)</title><rect x="685.5" y="181" width="149.1" height="15.0" fill="rgb(219,67,16)" rx="2" ry="2" />
+<text  x="688.47" y="191.5" >fmt::v12::basic_app..</text>
+</g>
+<g >
+<title>fmt::v12::detail::write_int&lt;char, fmt::v12::basic_appender&lt;char&gt;, unsigned int&gt; (116,179,991 samples, 1.51%)</title><rect x="1024.0" y="133" width="17.8" height="15.0" fill="rgb(231,122,29)" rx="2" ry="2" />
+<text  x="1027.02" y="143.5" ></text>
+</g>
+<g >
+<title>fmt::v12::detail::uint128_fallback::operator+= (3,434,801 samples, 0.04%)</title><rect x="863.2" y="165" width="0.5" height="15.0" fill="rgb(240,164,39)" rx="2" ry="2" />
+<text  x="866.19" y="175.5" ></text>
+</g>
+<g >
+<title>fmt::v12::basic_format_arg&lt;fmt::v12::context&gt;::format_custom (70,354,683 samples, 0.91%)</title><rect x="301.5" y="245" width="10.8" height="15.0" fill="rgb(223,84,20)" rx="2" ry="2" />
+<text  x="304.54" y="255.5" ></text>
+</g>
+<g >
+<title>std::__cxx11::basic_string&lt;char, std::char_traits&lt;char&gt;, std::allocator&lt;char&gt; &gt;::_M_local_data (1,129,075 samples, 0.01%)</title><rect x="450.0" y="277" width="0.2" height="15.0" fill="rgb(214,42,10)" rx="2" ry="2" />
+<text  x="453.02" y="287.5" ></text>
+</g>
+<g >
+<title>char* fmt::v12::detail::to_pointer&lt;char&gt; (34,026,563 samples, 0.44%)</title><rect x="356.1" y="197" width="5.3" height="15.0" fill="rgb(238,153,36)" rx="2" ry="2" />
+<text  x="359.13" y="207.5" ></text>
+</g>
+<g >
+<title>fmt::v12::basic_format_args&lt;fmt::v12::context&gt;::get (52,178,882 samples, 0.68%)</title><rect x="377.5" y="229" width="8.0" height="15.0" fill="rgb(228,106,25)" rx="2" ry="2" />
+<text  x="380.53" y="239.5" ></text>
+</g>
+<g >
+<title>fmt::v12::detail::buffer&lt;char&gt;::push_back (271,009,993 samples, 3.52%)</title><rect x="760.5" y="53" width="41.6" height="15.0" fill="rgb(245,185,44)" rx="2" ry="2" />
+<text  x="763.47" y="63.5" >fmt..</text>
+</g>
+<g >
+<title>void fmt::v12::detail::buffer&lt;char&gt;::append&lt;char&gt; (38,393,026 samples, 0.50%)</title><rect x="179.8" y="117" width="5.8" height="15.0" fill="rgb(238,152,36)" rx="2" ry="2" />
+<text  x="182.76" y="127.5" ></text>
+</g>
+<g >
+<title>fmt::v12::basic_appender&lt;char&gt; fmt::v12::detail::copy&lt;char, char const*, fmt::v12::basic_appender&lt;char&gt;, 0&gt; (2,258,704 samples, 0.03%)</title><rect x="45.0" y="277" width="0.3" height="15.0" fill="rgb(213,38,9)" rx="2" ry="2" />
+<text  x="47.98" y="287.5" ></text>
+</g>
+<g >
+<title>__GI___libc_free (424,810,160 samples, 5.52%)</title><rect x="1113.6" y="245" width="65.2" height="15.0" fill="rgb(252,218,52)" rx="2" ry="2" />
+<text  x="1116.59" y="255.5" >__GI___..</text>
+</g>
+<g >
+<title>std::allocator_traits&lt;std::allocator&lt;char&gt; &gt;::allocate (80,341,026 samples, 1.04%)</title><rect x="451.1" y="229" width="12.3" height="15.0" fill="rgb(212,33,8)" rx="2" ry="2" />
+<text  x="454.07" y="239.5" ></text>
+</g>
+<g >
+<title>std::__cxx11::basic_string&lt;char, std::char_traits&lt;char&gt;, std::allocator&lt;char&gt; &gt;::basic_string (234,462,952 samples, 3.05%)</title><rect x="886.5" y="293" width="36.0" height="15.0" fill="rgb(212,35,8)" rx="2" ry="2" />
+<text  x="889.52" y="303.5" >std..</text>
+</g>
+<g >
+<title>fmt::v12::basic_specs::type (19,305,844 samples, 0.25%)</title><rect x="858.5" y="181" width="2.9" height="15.0" fill="rgb(209,18,4)" rx="2" ry="2" />
+<text  x="861.49" y="191.5" ></text>
+</g>
+<g >
+<title>fmt::v12::basic_appender&lt;char&gt; fmt::v12::detail::write&lt;char, fmt::v12::basic_appender&lt;char&gt;, 0&gt; (1,009,673,518 samples, 13.13%)</title><rect x="144.7" y="181" width="154.9" height="15.0" fill="rgb(242,173,41)" rx="2" ry="2" />
+<text  x="147.70" y="191.5" >fmt::v12::basic_app..</text>
+</g>
+<g >
+<title>std::__cxx11::basic_string&lt;char, std::char_traits&lt;char&gt;, std::allocator&lt;char&gt; &gt;::_M_destroy (513,021,014 samples, 6.67%)</title><rect x="1109.1" y="309" width="78.7" height="15.0" fill="rgb(229,111,26)" rx="2" ry="2" />
+<text  x="1112.10" y="319.5" >std::__cx..</text>
+</g>
+<g >
+<title>fmt::v12::basic_memory_buffer&lt;char, 500ul, fmt::v12::detail::allocator&lt;char&gt; &gt;::deallocate (1,138,185 samples, 0.01%)</title><rect x="39.2" y="293" width="0.2" height="15.0" fill="rgb(206,7,1)" rx="2" ry="2" />
+<text  x="42.23" y="303.5" ></text>
+</g>
+<g >
+<title>__libc_start_main_impl (7,680,698,480 samples, 99.87%)</title><rect x="10.0" y="389" width="1178.5" height="15.0" fill="rgb(218,63,15)" rx="2" ry="2" />
+<text  x="13.00" y="399.5" >__libc_start_main_impl</text>
+</g>
+<g >
+<title>fmt::v12::detail::buffer&lt;char&gt;::push_back (7,405,039 samples, 0.10%)</title><rect x="1040.7" y="85" width="1.1" height="15.0" fill="rgb(245,185,44)" rx="2" ry="2" />
+<text  x="1043.71" y="95.5" ></text>
+</g>
+<g >
+<title>fmt::v12::basic_appender&lt;char&gt;::operator= (26,035,232 samples, 0.34%)</title><rect x="175.4" y="117" width="4.0" height="15.0" fill="rgb(230,116,27)" rx="2" ry="2" />
+<text  x="178.42" y="127.5" ></text>
+</g>
+<g >
+<title>tcache_get_n (46,435,710 samples, 0.60%)</title><rect x="900.4" y="133" width="7.2" height="15.0" fill="rgb(229,110,26)" rx="2" ry="2" />
+<text  x="903.44" y="143.5" ></text>
+</g>
+<g >
+<title>fmt::v12::basic_appender&lt;char&gt; fmt::v12::detail::write_significand&lt;fmt::v12::basic_appender&lt;char&gt;, char, char const*, fmt::v12::detail::digit_grouping&lt;char&gt; &gt; (481,043,861 samples, 6.26%)</title><rect x="728.2" y="101" width="73.9" height="15.0" fill="rgb(235,141,33)" rx="2" ry="2" />
+<text  x="731.24" y="111.5" >fmt::v12..</text>
+</g>
+<g >
+<title>fmt::v12::basic_appender&lt;char&gt; fmt::v12::detail::copy_noinline&lt;char, char const*, fmt::v12::basic_appender&lt;char&gt; &gt; (44,259,141 samples, 0.58%)</title><rect x="876.8" y="261" width="6.8" height="15.0" fill="rgb(238,154,36)" rx="2" ry="2" />
+<text  x="879.77" y="271.5" ></text>
+</g>
+<g >
+<title>fmt::v12::vformat[abi:cxx11] (3,203,653,339 samples, 41.66%)</title><rect x="27.8" y="325" width="491.6" height="15.0" fill="rgb(221,76,18)" rx="2" ry="2" />
+<text  x="30.81" y="335.5" >fmt::v12::vformat[abi:cxx11]</text>
+</g>
+</g>
+</svg>
